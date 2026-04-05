@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control v2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: #0d1224;
+            border-right: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar-brand {
+            padding: 24px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .sidebar-brand span {
+            color: #7b68ee;
+        }
+        .sidebar-nav {
+            padding: 12px 0;
+            flex: 1;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+        }
+        .nav-item:hover {
+            color: #d1d5db;
+            background: rgba(255,255,255,0.03);
+        }
+        .nav-item.active {
+            color: #fff;
+            background: rgba(123,104,238,0.08);
+            border-left-color: #7b68ee;
+        }
+        .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main content */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .topbar {
+            height: 56px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            flex-shrink: 0;
+        }
+        .topbar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .content {
+            flex: 1;
+            padding: 28px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand">Iron<span>Spider</span></div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-view="warroom">
+                <span class="nav-icon">&#9876;</span> War Room
+            </div>
+            <div class="nav-item" data-view="crm">
+                <span class="nav-icon">&#128202;</span> CRM
+            </div>
+            <div class="nav-item" data-view="clients">
+                <span class="nav-icon">&#128101;</span> Clients
+            </div>
+            <div class="nav-item" data-view="financials">
+                <span class="nav-icon">&#128176;</span> Financials
+            </div>
+            <div class="nav-item" data-view="agents">
+                <span class="nav-icon">&#129302;</span> Agents
+            </div>
+            <div class="nav-item" data-view="outreach">
+                <span class="nav-icon">&#9993;</span> Outreach
+            </div>
+            <div class="nav-item" data-view="geography">
+                <span class="nav-icon">&#127758;</span> Geography
+            </div>
+        </nav>
+    </aside>
+
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-title" id="topbarTitle">War Room</div>
+        </div>
+        <div class="content" id="content"></div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.nav-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+                item.classList.add('active');
+                var label = item.textContent.trim();
+                document.getElementById('topbarTitle').textContent = label;
+            });
+        });
+    </script>
+</body>
+</html>
