@@ -32,111 +32,390 @@
             letter-spacing: 0.5px;
             border-bottom: 1px solid rgba(255,255,255,0.06);
         }
-        .sidebar-brand span {
-            color: #7b68ee;
-        }
-        .sidebar-nav {
-            padding: 12px 0;
-            flex: 1;
-        }
+        .sidebar-brand span { color: #7b68ee; }
+        .sidebar-nav { padding: 12px 0; flex: 1; }
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #6b7280;
-            cursor: pointer;
-            transition: all 0.15s;
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 20px; font-size: 13px; font-weight: 500;
+            color: #6b7280; cursor: pointer; transition: all 0.15s;
             border-left: 3px solid transparent;
         }
-        .nav-item:hover {
-            color: #d1d5db;
-            background: rgba(255,255,255,0.03);
-        }
-        .nav-item.active {
-            color: #fff;
-            background: rgba(123,104,238,0.08);
-            border-left-color: #7b68ee;
-        }
-        .nav-icon {
-            font-size: 16px;
-            width: 20px;
-            text-align: center;
-        }
+        .nav-item:hover { color: #d1d5db; background: rgba(255,255,255,0.03); }
+        .nav-item.active { color: #fff; background: rgba(123,104,238,0.08); border-left-color: #7b68ee; }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
 
-        /* Main content */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        /* Main */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .topbar {
-            height: 56px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            display: flex;
-            align-items: center;
-            padding: 0 28px;
-            flex-shrink: 0;
+            height: 56px; border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px; flex-shrink: 0;
         }
-        .topbar-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
+        .topbar-title { font-size: 14px; font-weight: 600; color: #fff; }
+        .content { flex: 1; padding: 28px; overflow-y: auto; }
+
+        /* Summary bar */
+        .summary-bar {
+            display: flex; gap: 16px; margin-bottom: 24px;
         }
-        .content {
-            flex: 1;
-            padding: 28px;
+        .summary-card {
+            flex: 1; background: #111827; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px; padding: 16px 20px;
+        }
+        .summary-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: #6b7280; margin-bottom: 6px;
+        }
+        .summary-value { font-size: 24px; font-weight: 700; color: #fff; }
+        .summary-value.money { color: #10b981; }
+
+        /* Add button */
+        .btn-add {
+            background: #7b68ee; color: #fff; border: none; padding: 8px 18px;
+            border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-add:hover { background: #6952e0; }
+
+        /* Client cards */
+        .clients-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 16px;
+        }
+        .client-card {
+            background: #111827; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 20px; transition: border-color 0.15s;
+        }
+        .client-card:hover { border-color: rgba(123,104,238,0.2); }
+        .client-card-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .client-name { font-size: 16px; font-weight: 700; color: #fff; }
+        .client-owner { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .client-badges { display: flex; gap: 6px; }
+        .badge {
+            font-size: 10px; font-weight: 600; padding: 3px 8px;
+            border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .badge-plan { background: rgba(123,104,238,0.15); color: #7b68ee; }
+        .badge-active { background: rgba(16,185,129,0.15); color: #10b981; }
+        .badge-pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .badge-failed { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .client-fields {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px;
+            margin-bottom: 14px;
+        }
+        .client-field-label {
+            font-size: 9px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: #4b5563; margin-bottom: 2px;
+        }
+        .client-field-value { font-size: 13px; color: #d1d5db; word-break: break-word; }
+        .client-field-value a { color: #7b68ee; text-decoration: none; }
+        .client-field-value a:hover { text-decoration: underline; }
+        .client-field-value.money { color: #10b981; font-weight: 600; }
+        .client-notes {
+            font-size: 12px; color: #6b7280; font-style: italic;
+            padding: 10px 12px; background: rgba(0,0,0,0.2);
+            border-radius: 6px; margin-bottom: 14px;
+        }
+        .client-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .btn-sm {
+            font-size: 11px; font-weight: 600; padding: 5px 12px;
+            border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04); color: #9ca3af; transition: all 0.15s;
+        }
+        .btn-sm:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .btn-sm.delete:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.3); }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #111827; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px; padding: 28px; width: 520px; max-height: 90vh;
             overflow-y: auto;
         }
+        .modal-title {
+            font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 20px;
+        }
+        .form-row { display: flex; gap: 12px; margin-bottom: 14px; }
+        .form-group { flex: 1; }
+        .form-label {
+            display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: #6b7280; margin-bottom: 5px;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 9px 12px; background: #0a0e1a;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 7px;
+            color: #fff; font-size: 13px; font-family: inherit; outline: none;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: #7b68ee;
+        }
+        .form-select { appearance: auto; }
+        .form-textarea { min-height: 60px; resize: vertical; }
+        .form-actions {
+            display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;
+        }
+        .btn-cancel {
+            padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.1);
+            color: #9ca3af;
+        }
+        .btn-cancel:hover { color: #fff; }
+        .btn-save {
+            padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; background: #7b68ee; border: none; color: #fff;
+        }
+        .btn-save:hover { background: #6952e0; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #4b5563;
+        }
+        .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state-text { font-size: 14px; }
     </style>
 </head>
 <body>
     <aside class="sidebar">
         <div class="sidebar-brand">Iron<span>Spider</span></div>
         <nav class="sidebar-nav">
-            <div class="nav-item active" data-view="warroom">
-                <span class="nav-icon">&#9876;</span> War Room
-            </div>
-            <div class="nav-item" data-view="crm">
-                <span class="nav-icon">&#128202;</span> CRM
-            </div>
-            <div class="nav-item" data-view="clients">
+            <div class="nav-item active" data-view="clients">
                 <span class="nav-icon">&#128101;</span> Clients
-            </div>
-            <div class="nav-item" data-view="financials">
-                <span class="nav-icon">&#128176;</span> Financials
-            </div>
-            <div class="nav-item" data-view="agents">
-                <span class="nav-icon">&#129302;</span> Agents
-            </div>
-            <div class="nav-item" data-view="outreach">
-                <span class="nav-icon">&#9993;</span> Outreach
-            </div>
-            <div class="nav-item" data-view="geography">
-                <span class="nav-icon">&#127758;</span> Geography
             </div>
         </nav>
     </aside>
 
     <div class="main">
         <div class="topbar">
-            <div class="topbar-title" id="topbarTitle">War Room</div>
+            <div class="topbar-title">Clients</div>
+            <button class="btn-add" onclick="openModal()">+ Add Client</button>
         </div>
-        <div class="content" id="content"></div>
+        <div class="content" id="content">
+            <div class="summary-bar" id="summaryBar"></div>
+            <div class="clients-grid" id="clientsGrid"></div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModal()">
+        <div class="modal">
+            <div class="modal-title" id="modalTitle">Add Client</div>
+            <input type="hidden" id="editId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Business Name *</label>
+                    <input class="form-input" id="fName" placeholder="Presidio Dental Care">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Owner Name</label>
+                    <input class="form-input" id="fOwner" placeholder="Dr. Smith">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input class="form-input" id="fPhone" placeholder="(520) 555-0142">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-input" id="fEmail" placeholder="office@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website URL</label>
+                    <input class="form-input" id="fUrl" placeholder="https://example.com">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Plan</label>
+                    <select class="form-select" id="fPlan">
+                        <option>Website Only</option>
+                        <option>SEO Only</option>
+                        <option>Website + SEO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stripe Status</label>
+                    <select class="form-select" id="fStripe">
+                        <option>Pending</option>
+                        <option>Active</option>
+                        <option>Failed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Monthly MRR ($)</label>
+                    <input class="form-input" id="fMrr" type="number" min="0" value="250">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Initial Payment ($)</label>
+                    <input class="form-input" id="fInitial" type="number" min="0" value="750">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-textarea" id="fNotes" placeholder="Any notes about this client..."></textarea>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-save" onclick="saveClient()">Save Client</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        document.querySelectorAll('.nav-item').forEach(function(item) {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
-                item.classList.add('active');
-                var label = item.textContent.trim();
-                document.getElementById('topbarTitle').textContent = label;
+        var clients = [];
+
+        function esc(s) {
+            if (!s) return '';
+            var d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function loadClients() {
+            fetch('/api/clients')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    clients = data;
+                    render();
+                });
+        }
+
+        function render() {
+            renderSummary();
+            renderGrid();
+        }
+
+        function renderSummary() {
+            var total = clients.length;
+            var mrr = 0;
+            var initial = 0;
+            clients.forEach(function(c) {
+                mrr += c.mrr || 0;
+                initial += c.initial_payment || 0;
             });
-        });
+            document.getElementById('summaryBar').innerHTML =
+                '<div class="summary-card"><div class="summary-label">Total Clients</div><div class="summary-value">' + total + '</div></div>' +
+                '<div class="summary-card"><div class="summary-label">Total MRR</div><div class="summary-value money">$' + mrr.toLocaleString() + '/mo</div></div>' +
+                '<div class="summary-card"><div class="summary-label">Initial Revenue</div><div class="summary-value money">$' + initial.toLocaleString() + '</div></div>';
+        }
+
+        function stripeBadge(status) {
+            var cls = status === 'Active' ? 'badge-active' : (status === 'Failed' ? 'badge-failed' : 'badge-pending');
+            return '<span class="badge ' + cls + '">' + esc(status) + '</span>';
+        }
+
+        function renderGrid() {
+            var grid = document.getElementById('clientsGrid');
+            if (!clients.length) {
+                grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128101;</div><div class="empty-state-text">No clients yet. Click "+ Add Client" to get started.</div></div>';
+                return;
+            }
+            var html = '';
+            clients.forEach(function(c) {
+                html += '<div class="client-card">';
+                html += '<div class="client-card-header">';
+                html += '<div><div class="client-name">' + esc(c.business_name) + '</div>';
+                html += '<div class="client-owner">' + esc(c.owner_name) + '</div></div>';
+                html += '<div class="client-badges">';
+                html += '<span class="badge badge-plan">' + esc(c.plan) + '</span>';
+                html += stripeBadge(c.stripe_status);
+                html += '</div></div>';
+
+                html += '<div class="client-fields">';
+                html += field('Phone', c.phone ? '<a href="tel:' + esc(c.phone) + '">' + esc(c.phone) + '</a>' : '—');
+                html += field('Email', c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '—');
+                html += field('Website', c.website_url ? '<a href="' + esc(c.website_url) + '" target="_blank">' + esc(c.website_url.replace(/^https?:\/\//, '')) + '</a>' : '—');
+                html += field('MRR', '<span class="money">$' + (c.mrr || 0).toLocaleString() + '/mo</span>');
+                html += field('Initial Payment', '<span class="money">$' + (c.initial_payment || 0).toLocaleString() + '</span>');
+                html += field('Stripe', stripeBadge(c.stripe_status));
+                html += '</div>';
+
+                if (c.notes) html += '<div class="client-notes">' + esc(c.notes) + '</div>';
+
+                html += '<div class="client-actions">';
+                html += '<button class="btn-sm" onclick="editClient(' + c.id + ')">Edit</button>';
+                html += '<button class="btn-sm delete" onclick="deleteClient(' + c.id + ')">Delete</button>';
+                html += '</div></div>';
+            });
+            grid.innerHTML = html;
+        }
+
+        function field(label, value) {
+            return '<div><div class="client-field-label">' + label + '</div><div class="client-field-value">' + value + '</div></div>';
+        }
+
+        function openModal(c) {
+            document.getElementById('modalTitle').textContent = c ? 'Edit Client' : 'Add Client';
+            document.getElementById('editId').value = c ? c.id : '';
+            document.getElementById('fName').value = c ? c.business_name : '';
+            document.getElementById('fOwner').value = c ? c.owner_name : '';
+            document.getElementById('fPhone').value = c ? c.phone : '';
+            document.getElementById('fEmail').value = c ? c.email : '';
+            document.getElementById('fUrl').value = c ? c.website_url : '';
+            document.getElementById('fPlan').value = c ? c.plan : 'Website Only';
+            document.getElementById('fStripe').value = c ? c.stripe_status : 'Pending';
+            document.getElementById('fMrr').value = c ? c.mrr : 250;
+            document.getElementById('fInitial').value = c ? c.initial_payment : 750;
+            document.getElementById('fNotes').value = c ? c.notes : '';
+            document.getElementById('modalOverlay').classList.add('open');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+        }
+
+        function saveClient() {
+            var id = document.getElementById('editId').value;
+            var payload = {
+                business_name: document.getElementById('fName').value.trim(),
+                owner_name: document.getElementById('fOwner').value.trim(),
+                phone: document.getElementById('fPhone').value.trim(),
+                email: document.getElementById('fEmail').value.trim(),
+                website_url: document.getElementById('fUrl').value.trim(),
+                plan: document.getElementById('fPlan').value,
+                stripe_status: document.getElementById('fStripe').value,
+                mrr: parseFloat(document.getElementById('fMrr').value) || 0,
+                initial_payment: parseFloat(document.getElementById('fInitial').value) || 0,
+                notes: document.getElementById('fNotes').value.trim(),
+            };
+            if (!payload.business_name) { alert('Business name is required'); return; }
+            var url = id ? '/api/clients/' + id : '/api/clients';
+            var method = id ? 'PUT' : 'POST';
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }).then(function() {
+                closeModal();
+                loadClients();
+            });
+        }
+
+        function editClient(id) {
+            var c = clients.find(function(x) { return x.id === id; });
+            if (c) openModal(c);
+        }
+
+        function deleteClient(id) {
+            if (!confirm('Delete this client?')) return;
+            fetch('/api/clients/' + id, { method: 'DELETE' })
+                .then(function() { loadClients(); });
+        }
+
+        loadClients();
     </script>
 </body>
 </html>
