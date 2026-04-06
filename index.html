@@ -321,6 +321,13 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
+                    <label class="form-label">Contract Start Date</label>
+                    <input class="form-input" id="fStartDate" type="date">
+                </div>
+                <div class="form-group"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
                     <label class="form-label">Notes</label>
                     <textarea class="form-textarea" id="fNotes" placeholder="Any notes about this client..."></textarea>
                 </div>
@@ -479,6 +486,7 @@
             html += editableRow(c, 'email', 'Email');
             html += editableRow(c, 'website_url', 'Website', 'link');
             html += editableSelect(c, 'plan', 'Plan', ['Website Only', 'SEO Only', 'Website + SEO']);
+            html += editableRow(c, 'start_date', 'Client Since', 'date');
             html += '</div></div>';
 
             // Deployment
@@ -515,7 +523,7 @@
             html += editableSelect(c, 'stripe_status', 'Stripe Status', ['Active', 'Pending', 'Failed']);
             html += editableRow(c, 'mrr', 'Monthly MRR', 'money');
             html += editableRow(c, 'initial_payment', 'Initial Payment', 'money');
-            html += editableRow(c, 'total_paid', 'Total Paid to Date', 'money');
+            html += '<div class="detail-row"><div class="detail-row-label">Total Paid to Date</div><div class="detail-row-value money" style="cursor:default;">$' + (c.total_paid || 0).toLocaleString() + '</div></div>';
             html += '</div>';
             // Payment history
             var hist = c.payment_history || [];
@@ -544,6 +552,14 @@
             document.getElementById('detailView').innerHTML = html;
         }
 
+        function formatDate(d) {
+            if (!d) return '';
+            var parts = d.split('-');
+            if (parts.length !== 3) return d;
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return months[parseInt(parts[1],10)-1] + ' ' + parseInt(parts[2],10) + ', ' + parts[0];
+        }
+
         function editableRow(c, key, label, type) {
             var val = c[key];
             var display;
@@ -552,6 +568,8 @@
                     : '<span class="placeholder">Not set</span>';
             } else if (type === 'money') {
                 display = '<span class="money">$' + (parseFloat(val) || 0).toLocaleString() + '</span>';
+            } else if (type === 'date') {
+                display = val ? esc(formatDate(val)) : '<span class="placeholder">Not set</span>';
             } else {
                 display = val ? esc(val) : '<span class="placeholder">Not set</span>';
             }
@@ -580,8 +598,8 @@
             var c = currentDetail;
             var val = c[key] || '';
             if (type === 'money') val = parseFloat(val) || 0;
-            el.innerHTML = '<input class="detail-edit-input" value="' + esc(String(val)) + '" ' +
-                (type === 'money' ? 'type="number" min="0" step="0.01"' : '') + '>';
+            var inputType = type === 'money' ? 'type="number" min="0" step="0.01"' : (type === 'date' ? 'type="date"' : '');
+            el.innerHTML = '<input class="detail-edit-input" value="' + esc(String(val)) + '" ' + inputType + '>';
             var inp = el.querySelector('input');
             inp.focus();
             inp.addEventListener('blur', function() {
@@ -639,6 +657,7 @@
             document.getElementById('fStripe').value = c ? c.stripe_status : 'Pending';
             document.getElementById('fMrr').value = c ? c.mrr : 250;
             document.getElementById('fInitial').value = c ? c.initial_payment : 750;
+            document.getElementById('fStartDate').value = c ? c.start_date : '';
             document.getElementById('fNotes').value = c ? c.notes : '';
             document.getElementById('modalOverlay').classList.add('open');
         }
@@ -657,6 +676,7 @@
                 stripe_status: document.getElementById('fStripe').value,
                 mrr: parseFloat(document.getElementById('fMrr').value) || 0,
                 initial_payment: parseFloat(document.getElementById('fInitial').value) || 0,
+                start_date: document.getElementById('fStartDate').value,
                 notes: document.getElementById('fNotes').value.trim(),
             };
             if (!payload.business_name) { alert('Business name is required'); return; }

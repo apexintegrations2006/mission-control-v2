@@ -1,7 +1,8 @@
 from flask import Flask, send_from_directory, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, date
 import json
+import math
 import os
 
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -39,8 +40,23 @@ class Client(db.Model):
     google_analytics = db.Column(db.String(500), default='')
     login_credentials = db.Column(db.Text, default='')
     # Billing
+    start_date = db.Column(db.String(20), default='')
     total_paid = db.Column(db.Float, default=0)
     payment_history = db.Column(db.Text, default='[]')
+
+    def calc_total_paid(self):
+        if not self.start_date or not self.mrr:
+            return self.initial_payment or 0
+        try:
+            sd = datetime.strptime(self.start_date, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            return self.initial_payment or 0
+        today = date.today()
+        months = (today.year - sd.year) * 12 + (today.month - sd.month)
+        if today.day >= sd.day:
+            months += 1
+        months = max(months, 0)
+        return (months * (self.mrr or 0)) + (self.initial_payment or 0)
 
     def to_dict(self):
         return {
@@ -56,6 +72,7 @@ class Client(db.Model):
             'stripe_status': self.stripe_status,
             'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None,
+            'start_date': self.start_date or '',
             'github_repo': self.github_repo or '',
             'cloudflare_url': self.cloudflare_url or '',
             'live_url': self.live_url or '',
@@ -63,14 +80,14 @@ class Client(db.Model):
             'google_search_console': self.google_search_console or '',
             'google_analytics': self.google_analytics or '',
             'login_credentials': self.login_credentials or '',
-            'total_paid': self.total_paid or 0,
+            'total_paid': self.calc_total_paid(),
             'payment_history': json.loads(self.payment_history or '[]'),
         }
 
 
 FIELDS = [
     'business_name', 'owner_name', 'phone', 'email', 'website_url',
-    'plan', 'stripe_status', 'notes',
+    'plan', 'stripe_status', 'notes', 'start_date',
     'github_repo', 'cloudflare_url', 'live_url',
     'google_business', 'google_search_console', 'google_analytics',
     'login_credentials',
@@ -147,7 +164,7 @@ def seed_data():
                 initial_payment=1500,
                 stripe_status='Active',
                 notes='Flagship client. Referred two other practices.',
-                total_paid=1500,
+                start_date='2025-11-01',
                 github_repo='https://github.com/apexintegrations2006/presidio-dental',
                 live_url='https://presidiodental.com',
             ),
@@ -162,7 +179,7 @@ def seed_data():
                 initial_payment=750,
                 stripe_status='Active',
                 notes='Website launched March 2026. Happy with results.',
-                total_paid=750,
+                start_date='2026-01-15',
             ),
             Client(
                 business_name='Desert Ridge Oral Surgery',
@@ -175,7 +192,7 @@ def seed_data():
                 initial_payment=500,
                 stripe_status='Pending',
                 notes='SEO campaign starting next week. Waiting on content.',
-                total_paid=0,
+                start_date='2026-03-20',
             ),
         ]
         db.session.add_all(seeds)
