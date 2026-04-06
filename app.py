@@ -119,6 +119,7 @@ class SentContract(db.Model):
     signed_at = db.Column(db.DateTime, nullable=True)
     signer_name = db.Column(db.String(200), default='')
     signer_ip = db.Column(db.String(50), default='')
+    signature_image = db.Column(db.Text, default='')
     client_meta = db.Column(db.Text, default='{}')
 
     client = db.relationship('Client', backref='contracts')
@@ -144,6 +145,7 @@ class SentContract(db.Model):
             'signed_at': self.signed_at.isoformat() if self.signed_at else None,
             'signer_name': self.signer_name or '',
             'signer_ip': self.signer_ip or '',
+            'signature_image': self.signature_image or '',
         }
 
 
@@ -371,6 +373,7 @@ def sign_contract(contract_id):
         return jsonify({'error': 'Already signed'}), 400
     data = request.get_json()
     sc.signer_name = data.get('signer_name', '')
+    sc.signature_image = data.get('signature_image', '')
     sc.signer_ip = request.remote_addr or ''
     sc.signed_at = datetime.utcnow()
     sc.status = 'Signed'
@@ -446,16 +449,62 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
         <div class="contract-body">{{ contract.filled_content }}</div>
         <div class="sig-block"><div class="sig-grid">
             <div><div class="sig-col-title">Provider</div><div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">Owen Smyth</div></div><div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">Apex Integrations</div></div><div class="sig-field"><div class="sig-field-label">Signature</div><div class="sig-line signed">Owen Smyth</div></div><div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{{ contract.sent_at.strftime('%B %d, %Y') if contract.sent_at else '' }}</div></div></div>
-            <div><div class="sig-col-title">Client</div><div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">{{ meta.get('owner_name', '') }}</div></div><div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">{{ meta.get('client_name', '') }}</div></div><div class="sig-field"><div class="sig-field-label">Signature</div>{% if contract.status == 'Signed' %}<div class="sig-line signed">{{ contract.signer_name }}</div>{% else %}<div class="sig-line"></div>{% endif %}</div><div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{% if contract.status == 'Signed' %}{{ contract.signed_at.strftime('%B %d, %Y') }}{% endif %}</div></div></div>
+            <div><div class="sig-col-title">Client</div><div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">{{ meta.get('owner_name', '') }}</div></div><div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">{{ meta.get('client_name', '') }}</div></div><div class="sig-field"><div class="sig-field-label">Signature</div>{% if contract.status == 'Signed' and contract.signature_image %}<img src="{{ contract.signature_image }}" alt="Client Signature" style="max-width:280px;height:auto;display:block;">{% elif contract.status == 'Signed' %}<div class="sig-line signed">{{ contract.signer_name }}</div>{% else %}<div class="sig-line"></div>{% endif %}</div><div class="sig-field"><div class="sig-field-label">Printed Name</div><div class="sig-field-value">{% if contract.status == 'Signed' %}{{ contract.signer_name }}{% endif %}</div></div><div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{% if contract.status == 'Signed' %}{{ contract.signed_at.strftime('%B %d, %Y') }}{% endif %}</div></div></div>
         </div></div>
         {% if contract.status == 'Signed' %}
         <div class="signed-confirmation"><h3>&#10003; Contract Signed</h3><p>Signed by <strong>{{ contract.signer_name }}</strong> on {{ contract.signed_at.strftime('%B %d, %Y at %I:%M %p') }}<br>IP: {{ contract.signer_ip }}</p></div>
         {% else %}
-        <div class="sign-form"><h3>Sign This Contract</h3><input class="sign-input" id="sigName" placeholder="Type your full legal name to sign"><label class="sign-check"><input type="checkbox" id="sigAgree"> I have read and agree to the terms of this Service Agreement</label><button class="sign-btn" id="sigBtn" onclick="signContract()" disabled>Sign Agreement</button></div>
+        <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.2.0/dist/signature_pad.umd.min.js"></script>
+        <div class="sign-form">
+            <h3>Sign This Contract</h3>
+            <div style="margin-bottom:12px;">
+                <div class="sig-field-label" style="margin-bottom:6px;">Draw Your Signature</div>
+                <div style="position:relative;border:1px solid #cbd5e1;border-radius:4px;background:#fff;">
+                    <canvas id="sigCanvas" style="width:100%;height:160px;display:block;touch-action:none;"></canvas>
+                    <button type="button" id="sigClear" style="position:absolute;top:6px;right:6px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:3px;padding:3px 10px;font-size:11px;color:#64748b;cursor:pointer;">Clear</button>
+                </div>
+                <div id="sigPadError" style="display:none;color:#dc2626;font-size:11px;margin-top:4px;">Please draw your signature above</div>
+            </div>
+            <div style="margin-bottom:12px;">
+                <div class="sig-field-label" style="margin-bottom:6px;">Printed Full Legal Name</div>
+                <input class="sign-input" id="sigName" placeholder="Type your full legal name" style="margin-bottom:0;">
+            </div>
+            <label class="sign-check"><input type="checkbox" id="sigAgree"> I have read and agree to the terms of this Service Agreement</label>
+            <button class="sign-btn" id="sigBtn" onclick="signContract()" disabled>Sign Agreement</button>
+        </div>
         <script>
-            document.getElementById('sigAgree').addEventListener('change', function() { document.getElementById('sigBtn').disabled = !(this.checked && document.getElementById('sigName').value.trim()); });
-            document.getElementById('sigName').addEventListener('input', function() { document.getElementById('sigBtn').disabled = !(document.getElementById('sigAgree').checked && this.value.trim()); });
-            function signContract() { var name = document.getElementById('sigName').value.trim(); if (!name) return; document.getElementById('sigBtn').disabled = true; document.getElementById('sigBtn').textContent = 'Signing...'; fetch('/api/contracts/{{ contract.id }}/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ signer_name: name }) }).then(function(r) { return r.json(); }).then(function() { location.reload(); }); }
+            (function() {
+                var canvas = document.getElementById('sigCanvas');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = 160;
+                var pad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)', penColor: '#1e293b' });
+                document.getElementById('sigClear').addEventListener('click', function() { pad.clear(); updateBtn(); });
+                window._sigPad = pad;
+                function updateBtn() {
+                    var nameOk = document.getElementById('sigName').value.trim().length > 0;
+                    var agreed = document.getElementById('sigAgree').checked;
+                    var drawn = !pad.isEmpty();
+                    document.getElementById('sigBtn').disabled = !(nameOk && agreed && drawn);
+                    document.getElementById('sigPadError').style.display = 'none';
+                }
+                pad.addEventListener('endStroke', updateBtn);
+                document.getElementById('sigAgree').addEventListener('change', updateBtn);
+                document.getElementById('sigName').addEventListener('input', updateBtn);
+                window.addEventListener('resize', function() { var data = pad.toData(); canvas.width = canvas.offsetWidth; canvas.height = 160; pad.fromData(data); });
+            })();
+            function signContract() {
+                var pad = window._sigPad;
+                if (pad.isEmpty()) { document.getElementById('sigPadError').style.display = 'block'; return; }
+                var name = document.getElementById('sigName').value.trim();
+                if (!name) return;
+                document.getElementById('sigBtn').disabled = true;
+                document.getElementById('sigBtn').textContent = 'Signing...';
+                var sigImage = pad.toDataURL('image/png');
+                fetch('/api/contracts/{{ contract.id }}/sign', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ signer_name: name, signature_image: sigImage })
+                }).then(function(r) { return r.json(); }).then(function() { location.reload(); });
+            }
         </script>
         {% endif %}
     </div>

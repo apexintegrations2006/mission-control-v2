@@ -651,6 +651,9 @@
             if (sc.status === 'Signed') {
                 html += '<div style="max-width:816px;margin:12px auto 0;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:16px;text-align:center;">';
                 html += '<div style="font-size:13px;font-weight:700;color:#065f46;">&#10003; Signed by ' + esc(sc.signer_name) + '</div>';
+                if (sc.signature_image) {
+                    html += '<div style="margin:12px 0 8px;"><img src="' + sc.signature_image + '" alt="Client Signature" style="max-width:280px;height:auto;border:1px solid #e2e8f0;border-radius:4px;background:#fff;padding:8px;"></div>';
+                }
                 html += '<div style="font-size:11px;color:#475569;margin-top:4px;">' + esc(formatDate(sc.signed_at ? sc.signed_at.substring(0,10) : '')) + ' &middot; IP: ' + esc(sc.signer_ip) + '</div>';
                 html += '</div>';
             }
