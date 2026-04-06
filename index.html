@@ -513,8 +513,8 @@
 
         function loadContracts() {
             Promise.all([
-                fetch('/api/templates').then(function(r) { return r.json(); }),
-                fetch('/api/contracts').then(function(r) { return r.json(); }),
+                fetch('/api/templates').then(function(r) { return r.json(); }).catch(function() { return []; }),
+                fetch('/api/contracts').then(function(r) { return r.json(); }).catch(function() { return []; }),
             ]).then(function(results) {
                 templates = results[0];
                 sentContracts = results[1];

@@ -646,6 +646,13 @@ def seed_data():
 
 with app.app_context():
     db.create_all()
+    # Migrate: add signature_image column if missing (db.create_all won't alter existing tables)
+    try:
+        db.session.execute(db.text("ALTER TABLE contracts_sent ADD COLUMN IF NOT EXISTS signature_image TEXT DEFAULT ''"))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logger.warning(f'Migration note: {e}')
     seed_data()
     logger.info('Database tables verified, startup checks passed')
 
