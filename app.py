@@ -514,35 +514,61 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
 
 # ── Seed Data ───────────────────────────────────────────
 
-WEBSITE_TEMPLATE = """This Professional Services Agreement ("Agreement") is entered into between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
+WEBSITE_TEMPLATE = """This Professional Services Agreement ("Agreement") is entered into as of {{start_date}} by and between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
 
 1. SCOPE OF SERVICES
-Provider agrees to design, develop, and deliver a custom professional website for Client's dental practice. The website will be mobile-responsive, SEO-optimized, and built to modern web standards.
+Provider agrees to design, develop, and deliver a custom professional website for Client's business. This Agreement covers website design and development services only and does not include ongoing SEO, marketing, or retainer-based services.
 
 2. DELIVERABLES
-- Custom homepage design tailored to Client's dental practice brand
-- Up to 8 interior pages (About, Services, Team, Contact, etc.)
-- Mobile-responsive design across all devices
-- Basic on-page SEO setup (meta tags, schema markup, sitemap)
-- Contact form integration
-- Google Maps integration
+- Custom homepage design tailored to Client's brand and business identity
+- Up to 8 interior pages (About, Services, Team, Contact, Gallery, etc.)
+- Fully mobile-responsive design optimized for all devices and screen sizes
+- Basic on-page SEO setup (meta tags, schema markup, XML sitemap)
+- Contact form integration with email notifications
+- Google Maps integration with business location
 - SSL certificate and hosting setup via Cloudflare Pages
-- 30-day post-launch support period
+- 30-day post-launch support period for bug fixes and minor adjustments
 
-3. PAYMENT TERMS
-- Initial setup fee of ${{initial_payment}} is due upon execution of this Agreement
-- Monthly recurring fee of ${{mrr}} is billed on the 1st of each month via Stripe
-- Late payments are subject to a 5% fee after 15 days past due
-- Client may cancel monthly services with 30 days written notice
+3. TIMELINE
+- Estimated project timeline is 2-4 weeks from the date this Agreement is signed and payment is received
+- Timeline is contingent on Client providing all required content, assets, and approvals in a timely manner
+- Delays caused by Client may extend the estimated timeline at Provider's discretion
 
-4. INTELLECTUAL PROPERTY
-Upon full payment, Client owns all custom content and design assets. Provider retains rights to underlying code frameworks and templates.
+4. REVISIONS
+- Up to 2 rounds of design revisions are included in the project scope
+- Additional revision rounds beyond the included 2 may be billed at Provider's standard hourly rate
+- Each revision round must be submitted as a single consolidated list of changes
 
-5. TERM & TERMINATION
-This Agreement begins on {{start_date}} and continues on a {{contract_length}} basis. Either party may terminate with 30 days written notice. Outstanding invoices remain due upon termination.
+5. PAYMENT TERMS
+- A one-time setup fee of ${{initial_payment}} is due for this project
+- Payment option A: Full payment due before project kickoff
+- Payment option B: 50% deposit (${{initial_payment}} x 0.50) due before project kickoff, remaining 50% due on launch
+- Late payments are subject to a 5% fee if not received within 15 days of the due date
+- Project work will not begin until initial payment or deposit is received
 
-6. LIMITATION OF LIABILITY
-Provider's total liability shall not exceed the total fees paid by Client in the preceding 12 months."""
+6. OWNERSHIP & INTELLECTUAL PROPERTY
+- Upon receipt of final payment in full, Client owns the completed website including all custom content, design assets, and page layouts created specifically for this project
+- Provider retains rights to underlying code frameworks, development tools, and reusable templates
+- Provider may display the completed website in its portfolio and marketing materials unless Client provides written objection
+
+7. HOSTING & DOMAIN
+- Provider will set up and manage website hosting via Cloudflare Pages at no additional cost for the first 12 months following launch
+- After the first 12 months, hosting arrangements will be reviewed and any applicable fees communicated in advance
+- Client is responsible for domain name registration, renewal, and associated costs
+- Client must provide Provider with DNS access for initial hosting setup
+
+8. TERMINATION
+- If Client cancels the project after signing this Agreement, any deposit or upfront payment is non-refundable
+- If Client cancels after the first revision round, full payment is due for work completed to date
+- Provider reserves the right to terminate this Agreement if Client is unresponsive for more than 30 consecutive days during the project, in which case deposit is non-refundable
+
+9. LIMITATION OF LIABILITY
+- Provider's total liability under this Agreement shall not exceed the total fees paid by Client for this project
+- Provider is not liable for any indirect, incidental, or consequential damages including loss of revenue, data, or business opportunities
+- Provider is not responsible for downtime or service interruptions caused by third-party platforms (Cloudflare, domain registrars, etc.)
+
+10. GOVERNING LAW
+This Agreement shall be governed by the laws of the State of Arizona. Any disputes shall first be attempted to be resolved through good faith negotiation. This Agreement constitutes the entire agreement between the parties."""
 
 SEO_TEMPLATE = """This Professional Services Agreement ("Agreement") is entered into between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
 
