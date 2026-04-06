@@ -146,6 +146,25 @@
         .empty-state { text-align: center; padding: 60px 20px; color: #4b5563; }
         .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
         .empty-state-text { font-size: 14px; }
+
+        /* Editor drawer */
+        .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+        .drawer-overlay.open { display: block; }
+        .drawer {
+            position: fixed; top: 0; right: -480px; width: 480px; height: 100vh;
+            background: #111827; border-left: 1px solid rgba(255,255,255,0.08);
+            z-index: 901; display: flex; flex-direction: column;
+            transition: right 0.25s ease;
+        }
+        .drawer.open { right: 0; }
+        .drawer-header {
+            padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        .drawer-title { font-size: 15px; font-weight: 700; color: #fff; }
+        .drawer-actions { display: flex; gap: 8px; }
+        .drawer-body { flex: 1; padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; }
+        .drawer-body .tmpl-editor-area { flex: 1; min-height: 300px; }
     </style>
 </head>
 <body>
@@ -592,36 +611,17 @@
             if (!t) return '';
             var html = '';
             html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
-            html += '<div class="tmpl-editor-title">' + esc(t.plan_type) + ' Template</div>';
-            html += '<div style="display:flex;gap:8px;"><button class="btn-back" onclick="editingTemplate=null;renderContracts();">&larr; Back</button><button class="btn-save" onclick="saveTemplate(' + t.id + ')">Save Template</button></div>';
+            html += '<div style="display:flex;align-items:center;gap:12px;">';
+            html += '<button class="btn-back" onclick="editingTemplate=null;renderContracts();">&larr; Back</button>';
+            html += '<div class="tmpl-editor-title">' + esc(t.plan_type) + '</div>';
             html += '</div>';
-            html += '<div class="tmpl-vars" style="margin-bottom:12px;">Variables: <code>{{client_name}}</code> <code>{{owner_name}}</code> <code>{{plan}}</code> <code>{{mrr}}</code> <code>{{initial_payment}}</code> <code>{{start_date}}</code> <code>{{contract_length}}</code></div>';
-            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">';
-            // Editor
-            html += '<div class="tmpl-editor"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px;letter-spacing:0.8px;">Edit Legal Text</div>';
-            html += '<textarea class="tmpl-editor-area" id="tmplContent" oninput="updatePreview()">' + esc(t.content) + '</textarea></div>';
-            // Preview
-            html += '<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px;letter-spacing:0.8px;">Live Preview</div>';
-            html += '<div id="tmplPreview" style="background:#e5e7eb;border-radius:8px;padding:20px;max-height:700px;overflow-y:auto;">' + docPreviewHtml(fillPreview(t.content)) + '</div></div>';
+            html += '<button class="btn-sm primary" onclick="openDrawer(' + t.id + ')">Edit Legal Text</button>';
+            html += '</div>';
+            html += '<div id="tmplPreview" style="background:#e5e7eb;border-radius:8px;padding:24px;">';
+            html += docPreviewHtml(fillPreview(t.content));
             html += '</div>';
             return html;
         }
-
-        function updatePreview() {
-            var el = document.getElementById('tmplContent');
-            var prev = document.getElementById('tmplPreview');
-            if (el && prev) prev.innerHTML = docPreviewHtml(fillPreview(el.value));
-        }
-
-        function saveTemplate(id) {
-            var content = document.getElementById('tmplContent').value;
-            fetch('/api/templates/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: content }) })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    var idx = templates.findIndex(function(t) { return t.id === id; });
-                    if (idx > -1) templates[idx] = data;
-                    alert('Template saved!');
-                });
         }
 
         function renderSentTable() {
@@ -664,6 +664,59 @@
         /* ── Init ── */
         loadClients();
         switchSection('contracts');
+    </script>
+
+    <!-- Editor Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <div class="drawer" id="editorDrawer">
+        <div class="drawer-header">
+            <div class="drawer-title" id="drawerTitle">Edit Legal Text</div>
+            <div class="drawer-actions">
+                <button class="btn-save" onclick="saveAndCloseDrawer()">Save & Close</button>
+                <button class="btn-cancel" onclick="closeDrawer()">Cancel</button>
+            </div>
+        </div>
+        <div class="drawer-body">
+            <div class="tmpl-vars" style="margin-bottom:12px;">Variables: <code>{{client_name}}</code> <code>{{owner_name}}</code> <code>{{plan}}</code> <code>{{mrr}}</code> <code>{{initial_payment}}</code> <code>{{start_date}}</code> <code>{{contract_length}}</code></div>
+            <textarea class="tmpl-editor-area" id="drawerContent" oninput="updatePreviewFromDrawer()"></textarea>
+        </div>
+    </div>
+
+    <script>
+        function openDrawer(templateId) {
+            var t = templates.find(function(x) { return x.id === templateId; });
+            if (!t) return;
+            editingTemplate = templateId;
+            document.getElementById('drawerTitle').textContent = t.plan_type + ' — Edit Legal Text';
+            document.getElementById('drawerContent').value = t.content;
+            document.getElementById('drawerOverlay').classList.add('open');
+            document.getElementById('editorDrawer').classList.add('open');
+            setTimeout(function() { document.getElementById('drawerContent').focus(); }, 300);
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawerOverlay').classList.remove('open');
+            document.getElementById('editorDrawer').classList.remove('open');
+        }
+
+        function saveAndCloseDrawer() {
+            var id = editingTemplate;
+            var content = document.getElementById('drawerContent').value;
+            fetch('/api/templates/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: content }) })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var idx = templates.findIndex(function(t) { return t.id === id; });
+                    if (idx > -1) templates[idx] = data;
+                    closeDrawer();
+                    renderContracts();
+                });
+        }
+
+        function updatePreviewFromDrawer() {
+            var el = document.getElementById('drawerContent');
+            var prev = document.getElementById('tmplPreview');
+            if (el && prev) prev.innerHTML = docPreviewHtml(fillPreview(el.value));
+        }
     </script>
 </body>
 </html>
