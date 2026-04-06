@@ -404,7 +404,7 @@
         }
 
         function stripeBadge(status) {
-            var cls = status === 'Active' ? 'badge-active' : (status === 'Failed' ? 'badge-failed' : 'badge-pending');
+            var cls = status === 'Active' ? 'badge-active' : (status === 'Failed' || status === 'Cancelled' || status === 'Expired' ? 'badge-failed' : 'badge-pending');
             return '<span class="badge ' + cls + '">' + esc(status) + '</span>';
         }
 
@@ -485,8 +485,6 @@
             html += editableRow(c, 'phone', 'Phone');
             html += editableRow(c, 'email', 'Email');
             html += editableRow(c, 'website_url', 'Website', 'link');
-            html += editableSelect(c, 'plan', 'Plan', ['Website Only', 'SEO Only', 'Website + SEO']);
-            html += editableRow(c, 'start_date', 'Client Since', 'date');
             html += '</div></div>';
 
             // Deployment
@@ -516,9 +514,20 @@
             html += '<div class="seo-placeholder-text">SEO tracking coming soon</div>';
             html += '</div></div>';
 
-            // Billing
+            // Contract & Billing
             html += '<div class="detail-section">';
-            html += '<div class="detail-section-title">Billing</div>';
+            html += '<div class="detail-section-title">Contract & Billing</div>';
+            // Contract
+            html += '<div class="detail-grid">';
+            html += editableSelect(c, 'plan', 'Plan', ['Website Only', 'SEO Only', 'Website + SEO']);
+            html += editableSelect(c, 'contract_length', 'Contract Length', ['Month-to-Month', '6 Months', 'Annual']);
+            html += editableSelect(c, 'contract_status', 'Contract Status', ['Active', 'Expired', 'Cancelled']);
+            html += editableRow(c, 'start_date', 'Start Date', 'date');
+            html += editableRow(c, 'contract_doc_url', 'Contract Document', 'link');
+            html += '</div>';
+            // Divider
+            html += '<div style="border-top:1px solid rgba(255,255,255,0.06);margin:20px 0;"></div>';
+            // Billing
             html += '<div class="detail-grid">';
             html += editableSelect(c, 'stripe_status', 'Stripe Status', ['Active', 'Pending', 'Failed']);
             html += editableRow(c, 'mrr', 'Monthly MRR', 'money');
@@ -582,7 +591,7 @@
         function editableSelect(c, key, label, options) {
             var val = c[key] || options[0];
             var display;
-            if (key === 'stripe_status') {
+            if (key === 'stripe_status' || key === 'contract_status') {
                 display = stripeBadge(val);
             } else {
                 display = esc(val);

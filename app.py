@@ -38,8 +38,11 @@ class Client(db.Model):
     google_search_console = db.Column(db.String(500), default='')
     google_analytics = db.Column(db.String(500), default='')
     login_credentials = db.Column(db.Text, default='')
-    # Billing
+    # Contract & Billing
     start_date = db.Column(db.String(20), default='')
+    contract_length = db.Column(db.String(30), default='Month-to-Month')
+    contract_status = db.Column(db.String(20), default='Active')
+    contract_doc_url = db.Column(db.String(500), default='')
     total_paid = db.Column(db.Float, default=0)
     payment_history = db.Column(db.Text, default='[]')
 
@@ -58,6 +61,9 @@ class Client(db.Model):
             'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'start_date': self.start_date or '',
+            'contract_length': self.contract_length or 'Month-to-Month',
+            'contract_status': self.contract_status or 'Active',
+            'contract_doc_url': self.contract_doc_url or '',
             'github_repo': self.github_repo or '',
             'cloudflare_url': self.cloudflare_url or '',
             'live_url': self.live_url or '',
@@ -73,6 +79,7 @@ class Client(db.Model):
 FIELDS = [
     'business_name', 'owner_name', 'phone', 'email', 'website_url',
     'plan', 'stripe_status', 'notes', 'start_date',
+    'contract_length', 'contract_status', 'contract_doc_url',
     'github_repo', 'cloudflare_url', 'live_url',
     'google_business', 'google_search_console', 'google_analytics',
     'login_credentials',

@@ -18,6 +18,9 @@ COLUMNS_TO_ADD = [
     ('google_analytics',      'VARCHAR(500)', "''"),
     ('login_credentials',     'TEXT',         "''"),
     ('start_date',            'VARCHAR(20)',   "''"),
+    ('contract_length',       'VARCHAR(30)',  "'Month-to-Month'"),
+    ('contract_status',       'VARCHAR(20)',  "'Active'"),
+    ('contract_doc_url',      'VARCHAR(500)', "''"),
     ('total_paid',            'FLOAT',        '0'),
     ('payment_history',       'TEXT',         "'[]'"),
 ]
