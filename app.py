@@ -1,19 +1,35 @@
 from flask import Flask, send_from_directory, request, jsonify, render_template_string
 from flask_sqlalchemy import SQLAlchemy
+from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
+from dotenv import load_dotenv
 import json
 import uuid
 import os
+import glob
+import logging
+
+load_dotenv()
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('mission-control')
 
-database_url = os.environ.get('DATABASE_URL', 'sqlite:///clients.db')
+# ── Database — Postgres ONLY, no SQLite fallback ───────
+
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+    raise RuntimeError('DATABASE_URL is not set. This app requires Postgres. Never use SQLite.')
 if database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+BACKUP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backups')
+os.makedirs(BACKUP_DIR, exist_ok=True)
+last_backup_time = None
 
 
 # ── Models ──────────────────────────────────────────────
@@ -155,6 +171,73 @@ def apply_fields(c, data):
         c.payment_history = json.dumps(data['payment_history'])
 
 
+# ── Backup System ───────────────────────────────────────
+
+def run_backup():
+    global last_backup_time
+    with app.app_context():
+        try:
+            data = {
+                'backed_up_at': datetime.utcnow().isoformat(),
+                'clients': [c.to_dict() for c in Client.query.all()],
+                'contract_templates': [t.to_dict() for t in ContractTemplate.query.all()],
+                'contracts_sent': [c.to_dict() for c in SentContract.query.all()],
+            }
+            filename = 'backup_' + datetime.utcnow().strftime('%Y-%m-%d') + '.json'
+            filepath = os.path.join(BACKUP_DIR, filename)
+            with open(filepath, 'w') as f:
+                json.dump(data, f, indent=2)
+            last_backup_time = datetime.utcnow()
+            logger.info(f'Backup saved: {filename} ({len(data["clients"])} clients, {len(data["contract_templates"])} templates, {len(data["contracts_sent"])} contracts)')
+
+            # Prune backups older than 30 days
+            all_backups = sorted(glob.glob(os.path.join(BACKUP_DIR, 'backup_*.json')))
+            while len(all_backups) > 30:
+                os.remove(all_backups.pop(0))
+        except Exception as e:
+            logger.error(f'Backup failed: {e}')
+
+
+# ── Routes: Health Check ────────────────────────────────
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    status = 'OK'
+    warnings = []
+    try:
+        db.session.execute(db.text('SELECT 1'))
+        db_connected = True
+    except Exception:
+        db_connected = False
+        status = 'ERROR'
+        warnings.append('Database connection failed')
+
+    client_count = Client.query.count() if db_connected else 0
+    contract_count = SentContract.query.count() if db_connected else 0
+    template_count = ContractTemplate.query.count() if db_connected else 0
+
+    if db_connected and client_count == 0:
+        status = 'WARNING'
+        warnings.append('Client table is empty — data may have been wiped')
+
+    return jsonify({
+        'status': status,
+        'database_connected': db_connected,
+        'database_url_set': bool(os.environ.get('DATABASE_URL')),
+        'clients': client_count,
+        'contract_templates': template_count,
+        'contracts_sent': contract_count,
+        'last_backup': last_backup_time.isoformat() if last_backup_time else None,
+        'warnings': warnings,
+    })
+
+
+@app.route('/api/backup', methods=['POST'])
+def trigger_backup():
+    run_backup()
+    return jsonify({'ok': True, 'last_backup': last_backup_time.isoformat() if last_backup_time else None})
+
+
 # ── Routes: Pages ───────────────────────────────────────
 
 @app.route('/')
@@ -252,13 +335,9 @@ def send_contract():
     data = request.get_json()
     client_id = data.get('client_id')
     client = Client.query.get_or_404(client_id)
-
-    # Find matching template
     tmpl = ContractTemplate.query.filter_by(plan_type=client.plan).first()
     if not tmpl:
         return jsonify({'error': 'No template found for plan: ' + client.plan}), 404
-
-    # Fill placeholders
     filled = tmpl.content
     filled = filled.replace('{{client_name}}', client.business_name or '')
     filled = filled.replace('{{owner_name}}', client.owner_name or '')
@@ -267,7 +346,6 @@ def send_contract():
     filled = filled.replace('{{initial_payment}}', str(int(client.initial_payment or 0)))
     filled = filled.replace('{{start_date}}', client.start_date or 'TBD')
     filled = filled.replace('{{contract_length}}', client.contract_length or 'Month-to-Month')
-
     meta = {
         'client_name': client.business_name or '',
         'owner_name': client.owner_name or '',
@@ -278,10 +356,8 @@ def send_contract():
         'contract_length': client.contract_length or 'Month-to-Month',
     }
     sc = SentContract(
-        client_id=client.id,
-        template_id=tmpl.id,
-        filled_content=filled,
-        client_meta=json.dumps(meta),
+        client_id=client.id, template_id=tmpl.id,
+        filled_content=filled, client_meta=json.dumps(meta),
     )
     db.session.add(sc)
     db.session.commit()
@@ -313,32 +389,18 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #e5e7eb; color: #1e293b; min-height: 100vh; padding: 40px 20px; }
-        .page {
-            max-width: 816px; margin: 0 auto; background: #fff;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08);
-            border-radius: 2px; padding: 60px 72px 48px;
-        }
+        .page { max-width: 816px; margin: 0 auto; background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08); border-radius: 2px; padding: 60px 72px 48px; }
         @media (max-width: 860px) { .page { padding: 40px 28px 32px; } }
-
-        /* Letterhead */
         .letterhead { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #1e293b; }
         .letterhead-brand { font-size: 20px; font-weight: 800; color: #1e293b; letter-spacing: -0.3px; }
         .letterhead-brand span { color: #7b68ee; }
         .letterhead-right { text-align: right; font-size: 11px; color: #64748b; line-height: 1.6; }
-
-        /* Title */
         .doc-title { text-align: center; font-family: Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: 1px; margin-bottom: 28px; text-transform: uppercase; }
-
-        /* Summary box */
         .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 20px 24px; margin-bottom: 32px; }
         .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 32px; }
         .summary-item-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 1px; }
         .summary-item-value { font-size: 13px; font-weight: 600; color: #0f172a; }
-
-        /* Body */
         .contract-body { font-family: Georgia, 'Times New Roman', serif; font-size: 13.5px; line-height: 1.8; color: #334155; white-space: pre-wrap; margin-bottom: 40px; }
-
-        /* Signature block */
         .sig-block { border-top: 1px solid #cbd5e1; padding-top: 32px; margin-top: 40px; }
         .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
         .sig-col-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 20px; }
@@ -348,14 +410,10 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
         .sig-line { border-bottom: 1px solid #334155; min-height: 28px; margin-bottom: 4px; }
         .sig-line.signed { font-family: 'Brush Script MT', 'Segoe Script', cursive; font-size: 22px; color: #1e40af; padding-bottom: 4px; }
         .sig-date { font-size: 12px; color: #64748b; }
-
-        /* Status ribbon */
         .status-ribbon { text-align: center; margin-bottom: 24px; }
         .ribbon-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 3px; text-transform: uppercase; letter-spacing: 1px; }
         .ribbon-pending { background: #fef3c7; color: #92400e; }
         .ribbon-signed { background: #d1fae5; color: #065f46; }
-
-        /* Sign form */
         .sign-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 24px; margin-top: 32px; }
         .sign-form h3 { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
         .sign-input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; font-family: inherit; outline: none; margin-bottom: 12px; }
@@ -365,7 +423,6 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
         .sign-btn { background: #1e293b; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 0.3px; }
         .sign-btn:hover { background: #0f172a; }
         .sign-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
         .signed-confirmation { text-align: center; padding: 24px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; margin-top: 32px; }
         .signed-confirmation h3 { color: #065f46; font-size: 16px; margin-bottom: 6px; }
         .signed-confirmation p { font-size: 12px; color: #475569; }
@@ -374,96 +431,31 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
 <body>
     {% set meta = contract.get_meta() %}
     <div class="page">
-        <!-- Letterhead -->
-        <div class="letterhead">
-            <div class="letterhead-brand">Apex<span>Integrations</span></div>
-            <div class="letterhead-right">Apex Integrations LLC<br>Tucson, Arizona<br>apexintegrations.com</div>
-        </div>
-
-        <!-- Status -->
-        <div class="status-ribbon">
-            {% if contract.status == 'Signed' %}
-            <span class="ribbon-badge ribbon-signed">&#10003; Signed</span>
-            {% else %}
-            <span class="ribbon-badge ribbon-pending">Awaiting Signature</span>
-            {% endif %}
-        </div>
-
-        <!-- Title -->
+        <div class="letterhead"><div class="letterhead-brand">Apex<span>Integrations</span></div><div class="letterhead-right">Apex Integrations LLC<br>Tucson, Arizona<br>apexintegrations.com</div></div>
+        <div class="status-ribbon">{% if contract.status == 'Signed' %}<span class="ribbon-badge ribbon-signed">&#10003; Signed</span>{% else %}<span class="ribbon-badge ribbon-pending">Awaiting Signature</span>{% endif %}</div>
         <div class="doc-title">Service Agreement</div>
-
-        <!-- Summary -->
-        <div class="summary-box">
-            <div class="summary-grid">
-                <div><div class="summary-item-label">Client</div><div class="summary-item-value">{{ meta.get('owner_name', '') }}</div></div>
-                <div><div class="summary-item-label">Business</div><div class="summary-item-value">{{ meta.get('client_name', '') }}</div></div>
-                <div><div class="summary-item-label">Plan</div><div class="summary-item-value">{{ meta.get('plan', '') }}</div></div>
-                <div><div class="summary-item-label">Contract Length</div><div class="summary-item-value">{{ meta.get('contract_length', '') }}</div></div>
-                <div><div class="summary-item-label">Monthly Retainer</div><div class="summary-item-value">${{ meta.get('mrr', '0') }}/mo</div></div>
-                <div><div class="summary-item-label">Initial Payment</div><div class="summary-item-value">${{ meta.get('initial_payment', '0') }}</div></div>
-                <div><div class="summary-item-label">Start Date</div><div class="summary-item-value">{{ meta.get('start_date', 'TBD') }}</div></div>
-            </div>
-        </div>
-
-        <!-- Body -->
+        <div class="summary-box"><div class="summary-grid">
+            <div><div class="summary-item-label">Client</div><div class="summary-item-value">{{ meta.get('owner_name', '') }}</div></div>
+            <div><div class="summary-item-label">Business</div><div class="summary-item-value">{{ meta.get('client_name', '') }}</div></div>
+            <div><div class="summary-item-label">Plan</div><div class="summary-item-value">{{ meta.get('plan', '') }}</div></div>
+            <div><div class="summary-item-label">Contract Length</div><div class="summary-item-value">{{ meta.get('contract_length', '') }}</div></div>
+            <div><div class="summary-item-label">Monthly Retainer</div><div class="summary-item-value">${{ meta.get('mrr', '0') }}/mo</div></div>
+            <div><div class="summary-item-label">Initial Payment</div><div class="summary-item-value">${{ meta.get('initial_payment', '0') }}</div></div>
+            <div><div class="summary-item-label">Start Date</div><div class="summary-item-value">{{ meta.get('start_date', 'TBD') }}</div></div>
+        </div></div>
         <div class="contract-body">{{ contract.filled_content }}</div>
-
-        <!-- Signature block -->
-        <div class="sig-block">
-            <div class="sig-grid">
-                <div>
-                    <div class="sig-col-title">Provider</div>
-                    <div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">Owen Smyth</div></div>
-                    <div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">Apex Integrations</div></div>
-                    <div class="sig-field"><div class="sig-field-label">Signature</div><div class="sig-line signed">Owen Smyth</div></div>
-                    <div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{{ contract.sent_at.strftime('%B %d, %Y') if contract.sent_at else '' }}</div></div>
-                </div>
-                <div>
-                    <div class="sig-col-title">Client</div>
-                    <div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">{{ meta.get('owner_name', '') }}</div></div>
-                    <div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">{{ meta.get('client_name', '') }}</div></div>
-                    <div class="sig-field"><div class="sig-field-label">Signature</div>
-                        {% if contract.status == 'Signed' %}
-                        <div class="sig-line signed">{{ contract.signer_name }}</div>
-                        {% else %}
-                        <div class="sig-line"></div>
-                        {% endif %}
-                    </div>
-                    <div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{% if contract.status == 'Signed' %}{{ contract.signed_at.strftime('%B %d, %Y') }}{% endif %}</div></div>
-                </div>
-            </div>
-        </div>
-
+        <div class="sig-block"><div class="sig-grid">
+            <div><div class="sig-col-title">Provider</div><div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">Owen Smyth</div></div><div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">Apex Integrations</div></div><div class="sig-field"><div class="sig-field-label">Signature</div><div class="sig-line signed">Owen Smyth</div></div><div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{{ contract.sent_at.strftime('%B %d, %Y') if contract.sent_at else '' }}</div></div></div>
+            <div><div class="sig-col-title">Client</div><div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">{{ meta.get('owner_name', '') }}</div></div><div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">{{ meta.get('client_name', '') }}</div></div><div class="sig-field"><div class="sig-field-label">Signature</div>{% if contract.status == 'Signed' %}<div class="sig-line signed">{{ contract.signer_name }}</div>{% else %}<div class="sig-line"></div>{% endif %}</div><div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{% if contract.status == 'Signed' %}{{ contract.signed_at.strftime('%B %d, %Y') }}{% endif %}</div></div></div>
+        </div></div>
         {% if contract.status == 'Signed' %}
-        <div class="signed-confirmation">
-            <h3>&#10003; Contract Signed</h3>
-            <p>Signed by <strong>{{ contract.signer_name }}</strong> on {{ contract.signed_at.strftime('%B %d, %Y at %I:%M %p') }}<br>IP: {{ contract.signer_ip }}</p>
-        </div>
+        <div class="signed-confirmation"><h3>&#10003; Contract Signed</h3><p>Signed by <strong>{{ contract.signer_name }}</strong> on {{ contract.signed_at.strftime('%B %d, %Y at %I:%M %p') }}<br>IP: {{ contract.signer_ip }}</p></div>
         {% else %}
-        <div class="sign-form">
-            <h3>Sign This Contract</h3>
-            <input class="sign-input" id="sigName" placeholder="Type your full legal name to sign">
-            <label class="sign-check"><input type="checkbox" id="sigAgree"> I have read and agree to the terms of this Service Agreement</label>
-            <button class="sign-btn" id="sigBtn" onclick="signContract()" disabled>Sign Agreement</button>
-        </div>
+        <div class="sign-form"><h3>Sign This Contract</h3><input class="sign-input" id="sigName" placeholder="Type your full legal name to sign"><label class="sign-check"><input type="checkbox" id="sigAgree"> I have read and agree to the terms of this Service Agreement</label><button class="sign-btn" id="sigBtn" onclick="signContract()" disabled>Sign Agreement</button></div>
         <script>
-            document.getElementById('sigAgree').addEventListener('change', function() {
-                document.getElementById('sigBtn').disabled = !(this.checked && document.getElementById('sigName').value.trim());
-            });
-            document.getElementById('sigName').addEventListener('input', function() {
-                document.getElementById('sigBtn').disabled = !(document.getElementById('sigAgree').checked && this.value.trim());
-            });
-            function signContract() {
-                var name = document.getElementById('sigName').value.trim();
-                if (!name) return;
-                document.getElementById('sigBtn').disabled = true;
-                document.getElementById('sigBtn').textContent = 'Signing...';
-                fetch('/api/contracts/{{ contract.id }}/sign', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ signer_name: name }),
-                }).then(function(r) { return r.json(); }).then(function() { location.reload(); });
-            }
+            document.getElementById('sigAgree').addEventListener('change', function() { document.getElementById('sigBtn').disabled = !(this.checked && document.getElementById('sigName').value.trim()); });
+            document.getElementById('sigName').addEventListener('input', function() { document.getElementById('sigBtn').disabled = !(document.getElementById('sigAgree').checked && this.value.trim()); });
+            function signContract() { var name = document.getElementById('sigName').value.trim(); if (!name) return; document.getElementById('sigBtn').disabled = true; document.getElementById('sigBtn').textContent = 'Signing...'; fetch('/api/contracts/{{ contract.id }}/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ signer_name: name }) }).then(function(r) { return r.json(); }).then(function() { location.reload(); }); }
         </script>
         {% endif %}
     </div>
@@ -577,50 +569,19 @@ Provider's total liability shall not exceed the total fees paid by Client in the
 
 def seed_data():
     if Client.query.count() == 0:
+        logger.warning('CLIENTS TABLE IS EMPTY — seeding default data')
         seeds = [
-            Client(
-                business_name='Presidio Dental Care',
-                owner_name='Dr. Maria Santos',
-                phone='(520) 555-0142',
-                email='maria@presidiodental.com',
-                website_url='https://presidiodental.com',
-                plan='Website + SEO',
-                mrr=450, initial_payment=1500,
-                stripe_status='Active',
-                notes='Flagship client. Referred two other practices.',
-                start_date='2025-11-01',
-                github_repo='https://github.com/apexintegrations2006/presidio-dental',
-                live_url='https://presidiodental.com',
-            ),
-            Client(
-                business_name='Smile Tucson Family Dentistry',
-                owner_name='Dr. James Whitfield',
-                phone='(520) 555-0287',
-                email='james@smiletucson.com',
-                website_url='https://smiletucson.com',
-                plan='Website Only',
-                mrr=250, initial_payment=750,
-                stripe_status='Active',
-                notes='Website launched March 2026. Happy with results.',
-                start_date='2026-01-15',
-            ),
-            Client(
-                business_name='Desert Ridge Oral Surgery',
-                owner_name='Dr. Anil Kapoor',
-                phone='(480) 555-0391',
-                email='anil@desertridgeoral.com',
-                website_url='https://desertridgeoral.com',
-                plan='SEO Only',
-                mrr=300, initial_payment=500,
-                stripe_status='Pending',
-                notes='SEO campaign starting next week. Waiting on content.',
-                start_date='2026-03-20',
-            ),
+            Client(business_name='Presidio Dental Care', owner_name='Dr. Maria Santos', phone='(520) 555-0142', email='maria@presidiodental.com', website_url='https://presidiodental.com', plan='Website + SEO', mrr=450, initial_payment=1500, stripe_status='Active', notes='Flagship client. Referred two other practices.', start_date='2025-11-01', github_repo='https://github.com/apexintegrations2006/presidio-dental', live_url='https://presidiodental.com'),
+            Client(business_name='Smile Tucson Family Dentistry', owner_name='Dr. James Whitfield', phone='(520) 555-0287', email='james@smiletucson.com', website_url='https://smiletucson.com', plan='Website Only', mrr=250, initial_payment=750, stripe_status='Active', notes='Website launched March 2026. Happy with results.', start_date='2026-01-15'),
+            Client(business_name='Desert Ridge Oral Surgery', owner_name='Dr. Anil Kapoor', phone='(480) 555-0391', email='anil@desertridgeoral.com', website_url='https://desertridgeoral.com', plan='SEO Only', mrr=300, initial_payment=500, stripe_status='Pending', notes='SEO campaign starting next week. Waiting on content.', start_date='2026-03-20'),
         ]
         db.session.add_all(seeds)
         db.session.commit()
+    else:
+        logger.info(f'Startup check: {Client.query.count()} clients in database')
 
     if ContractTemplate.query.count() == 0:
+        logger.warning('TEMPLATES TABLE IS EMPTY — seeding default templates')
         templates = [
             ContractTemplate(plan_type='Website Only', content=WEBSITE_TEMPLATE),
             ContractTemplate(plan_type='SEO Only', content=SEO_TEMPLATE),
@@ -628,11 +589,22 @@ def seed_data():
         ]
         db.session.add_all(templates)
         db.session.commit()
+    else:
+        logger.info(f'Startup check: {ContractTemplate.query.count()} templates in database')
 
+
+# ── Startup ─────────────────────────────────────────────
 
 with app.app_context():
     db.create_all()
     seed_data()
+    logger.info('Database tables verified, startup checks passed')
+
+# Schedule daily backup at midnight UTC
+scheduler = BackgroundScheduler()
+scheduler.add_job(run_backup, 'cron', hour=0, minute=0)
+scheduler.start()
+logger.info('Backup scheduler started — daily at 00:00 UTC')
 
 
 if __name__ == '__main__':
