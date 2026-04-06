@@ -617,29 +617,41 @@ Provider's total liability shall not exceed the total fees paid by Client in the
 
 
 def seed_data():
-    if Client.query.count() == 0:
-        logger.warning('CLIENTS TABLE IS EMPTY — seeding default data')
-        seeds = [
-            Client(business_name='Presidio Dental Care', owner_name='Dr. Maria Santos', phone='(520) 555-0142', email='maria@presidiodental.com', website_url='https://presidiodental.com', plan='Website + SEO', mrr=450, initial_payment=1500, stripe_status='Active', notes='Flagship client. Referred two other practices.', start_date='2025-11-01', github_repo='https://github.com/apexintegrations2006/presidio-dental', live_url='https://presidiodental.com'),
-            Client(business_name='Smile Tucson Family Dentistry', owner_name='Dr. James Whitfield', phone='(520) 555-0287', email='james@smiletucson.com', website_url='https://smiletucson.com', plan='Website Only', mrr=250, initial_payment=750, stripe_status='Active', notes='Website launched March 2026. Happy with results.', start_date='2026-01-15'),
-            Client(business_name='Desert Ridge Oral Surgery', owner_name='Dr. Anil Kapoor', phone='(480) 555-0391', email='anil@desertridgeoral.com', website_url='https://desertridgeoral.com', plan='SEO Only', mrr=300, initial_payment=500, stripe_status='Pending', notes='SEO campaign starting next week. Waiting on content.', start_date='2026-03-20'),
-        ]
-        db.session.add_all(seeds)
-        db.session.commit()
-    else:
-        logger.info(f'Startup check: {Client.query.count()} clients in database')
+    # ── Clients: seed only if table is completely empty ──
+    try:
+        if Client.query.count() == 0:
+            logger.warning('CLIENTS TABLE IS EMPTY — seeding default data')
+            seeds = [
+                Client(business_name='Presidio Dental Care', owner_name='Dr. Maria Santos', phone='(520) 555-0142', email='maria@presidiodental.com', website_url='https://presidiodental.com', plan='Website + SEO', mrr=450, initial_payment=1500, stripe_status='Active', notes='Flagship client. Referred two other practices.', start_date='2025-11-01', github_repo='https://github.com/apexintegrations2006/presidio-dental', live_url='https://presidiodental.com'),
+                Client(business_name='Smile Tucson Family Dentistry', owner_name='Dr. James Whitfield', phone='(520) 555-0287', email='james@smiletucson.com', website_url='https://smiletucson.com', plan='Website Only', mrr=250, initial_payment=750, stripe_status='Active', notes='Website launched March 2026. Happy with results.', start_date='2026-01-15'),
+                Client(business_name='Desert Ridge Oral Surgery', owner_name='Dr. Anil Kapoor', phone='(480) 555-0391', email='anil@desertridgeoral.com', website_url='https://desertridgeoral.com', plan='SEO Only', mrr=300, initial_payment=500, stripe_status='Pending', notes='SEO campaign starting next week. Waiting on content.', start_date='2026-03-20'),
+            ]
+            db.session.add_all(seeds)
+            db.session.commit()
+        else:
+            logger.info(f'Startup check: {Client.query.count()} clients in database')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Client seed failed: {e}')
 
-    if ContractTemplate.query.count() == 0:
-        logger.warning('TEMPLATES TABLE IS EMPTY — seeding default templates')
-        templates = [
-            ContractTemplate(plan_type='Website Only', content=WEBSITE_TEMPLATE),
-            ContractTemplate(plan_type='SEO Only', content=SEO_TEMPLATE),
-            ContractTemplate(plan_type='Website + SEO', content=COMBO_TEMPLATE),
-        ]
-        db.session.add_all(templates)
-        db.session.commit()
-    else:
-        logger.info(f'Startup check: {ContractTemplate.query.count()} templates in database')
+    # ── Templates: ensure all three exist by plan_type (upsert) ──
+    try:
+        default_templates = {
+            'Website Only': WEBSITE_TEMPLATE,
+            'SEO Only': SEO_TEMPLATE,
+            'Website + SEO': COMBO_TEMPLATE,
+        }
+        existing = {t.plan_type for t in ContractTemplate.query.all()}
+        missing = set(default_templates.keys()) - existing
+        if missing:
+            logger.warning(f'TEMPLATES MISSING — seeding: {missing}')
+            for plan_type in missing:
+                db.session.add(ContractTemplate(plan_type=plan_type, content=default_templates[plan_type]))
+            db.session.commit()
+        logger.info(f'Startup check: {ContractTemplate.query.count()} templates in database ({len(missing)} seeded)')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Template seed failed: {e}')
 
 
 # ── Startup ─────────────────────────────────────────────
