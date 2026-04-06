@@ -60,6 +60,35 @@ with engine.connect() as conn:
     conn.commit()
     print("  Updated seed client start dates")
 
+    # Create contract_templates table if not exists
+    conn.execute(sqlalchemy.text("""
+        CREATE TABLE IF NOT EXISTS contract_templates (
+            id SERIAL PRIMARY KEY,
+            plan_type VARCHAR(50) NOT NULL UNIQUE,
+            content TEXT NOT NULL DEFAULT '',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """))
+    conn.commit()
+    print("  Ensured contract_templates table exists")
+
+    # Create contracts_sent table if not exists
+    conn.execute(sqlalchemy.text("""
+        CREATE TABLE IF NOT EXISTS contracts_sent (
+            id VARCHAR(36) PRIMARY KEY,
+            client_id INTEGER NOT NULL REFERENCES clients(id),
+            template_id INTEGER NOT NULL REFERENCES contract_templates(id),
+            filled_content TEXT NOT NULL,
+            status VARCHAR(20) DEFAULT 'Pending Signature',
+            sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            signed_at TIMESTAMP,
+            signer_name VARCHAR(200) DEFAULT '',
+            signer_ip VARCHAR(50) DEFAULT ''
+        )
+    """))
+    conn.commit()
+    print("  Ensured contracts_sent table exists")
+
     # Verify
     result = conn.execute(sqlalchemy.text(
         "SELECT column_name FROM information_schema.columns WHERE table_name = 'clients' ORDER BY ordinal_position"

@@ -8,229 +8,141 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0e1a;
-            color: #e0e0e0;
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
+            background: #0a0e1a; color: #e0e0e0; height: 100vh; display: flex; overflow: hidden;
         }
 
         /* Sidebar */
-        .sidebar {
-            width: 220px; background: #0d1224;
-            border-right: 1px solid rgba(255,255,255,0.06);
-            display: flex; flex-direction: column; flex-shrink: 0;
-        }
-        .sidebar-brand {
-            padding: 24px 20px; font-size: 15px; font-weight: 700;
-            color: #fff; letter-spacing: 0.5px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
+        .sidebar { width: 220px; background: #0d1224; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-brand { padding: 24px 20px; font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.06); }
         .sidebar-brand span { color: #7b68ee; }
         .sidebar-nav { padding: 12px 0; flex: 1; }
-        .nav-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 20px; font-size: 13px; font-weight: 500;
-            color: #6b7280; cursor: pointer; transition: all 0.15s;
-            border-left: 3px solid transparent;
-        }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; }
         .nav-item:hover { color: #d1d5db; background: rgba(255,255,255,0.03); }
         .nav-item.active { color: #fff; background: rgba(123,104,238,0.08); border-left-color: #7b68ee; }
 
         /* Main */
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .topbar {
-            height: 56px; border-bottom: 1px solid rgba(255,255,255,0.06);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 28px; flex-shrink: 0;
-        }
+        .topbar { height: 56px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; }
         .topbar-title { font-size: 14px; font-weight: 600; color: #fff; }
         .topbar-left { display: flex; align-items: center; gap: 12px; }
         .content { flex: 1; padding: 28px; overflow-y: auto; }
 
-        /* Summary bar */
+        /* Summary */
         .summary-bar { display: flex; gap: 16px; margin-bottom: 24px; }
-        .summary-card {
-            flex: 1; background: #111827; border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 10px; padding: 16px 20px;
-        }
-        .summary-label {
-            font-size: 10px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 1px; color: #6b7280; margin-bottom: 6px;
-        }
+        .summary-card { flex: 1; background: #111827; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 16px 20px; }
+        .summary-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 6px; }
         .summary-value { font-size: 24px; font-weight: 700; color: #fff; }
         .summary-value.money { color: #10b981; }
 
         /* Buttons */
-        .btn-add {
-            background: #7b68ee; color: #fff; border: none; padding: 8px 18px;
-            border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
-        }
+        .btn-add { background: #7b68ee; color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
         .btn-add:hover { background: #6952e0; }
-        .btn-back {
-            background: none; border: 1px solid rgba(255,255,255,0.08);
-            color: #9ca3af; font-size: 12px; font-weight: 600; padding: 5px 12px;
-            border-radius: 6px; cursor: pointer; transition: all 0.15s;
-        }
+        .btn-back { background: none; border: 1px solid rgba(255,255,255,0.08); color: #9ca3af; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
         .btn-back:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .btn-sm { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); color: #9ca3af; transition: all 0.15s; }
+        .btn-sm:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .btn-sm.delete:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.3); }
+        .btn-sm.primary { background: rgba(123,104,238,0.15); color: #7b68ee; border-color: rgba(123,104,238,0.3); }
+        .btn-sm.primary:hover { background: rgba(123,104,238,0.25); color: #fff; }
 
-        /* Client cards */
-        .clients-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px;
-        }
-        .client-card {
-            background: #111827; border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px; padding: 20px; transition: border-color 0.15s; cursor: pointer;
-        }
+        /* Cards */
+        .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+        .client-card { background: #111827; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; transition: border-color 0.15s; cursor: pointer; }
         .client-card:hover { border-color: rgba(123,104,238,0.3); }
-        .client-card-header {
-            display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;
-        }
+        .client-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
         .client-name { font-size: 16px; font-weight: 700; color: #fff; }
         .client-owner { font-size: 12px; color: #6b7280; margin-top: 2px; }
         .client-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-        .badge {
-            font-size: 10px; font-weight: 600; padding: 3px 8px;
-            border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;
-        }
+        .badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         .badge-plan { background: rgba(123,104,238,0.15); color: #7b68ee; }
         .badge-active { background: rgba(16,185,129,0.15); color: #10b981; }
         .badge-pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
         .badge-failed { background: rgba(239,68,68,0.15); color: #ef4444; }
-        .client-fields {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-bottom: 14px;
-        }
-        .client-field-label {
-            font-size: 9px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.8px; color: #4b5563; margin-bottom: 2px;
-        }
+        .client-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-bottom: 14px; }
+        .client-field-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #4b5563; margin-bottom: 2px; }
         .client-field-value { font-size: 13px; color: #d1d5db; word-break: break-word; }
         .client-field-value a { color: #7b68ee; text-decoration: none; }
         .client-field-value a:hover { text-decoration: underline; }
         .client-field-value.money { color: #10b981; font-weight: 600; }
-        .client-notes {
-            font-size: 12px; color: #6b7280; font-style: italic;
-            padding: 10px 12px; background: rgba(0,0,0,0.2); border-radius: 6px; margin-bottom: 14px;
-        }
-        .client-actions { display: flex; gap: 8px; justify-content: flex-end; }
-        .btn-sm {
-            font-size: 11px; font-weight: 600; padding: 5px 12px;
-            border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.04); color: #9ca3af; transition: all 0.15s;
-        }
-        .btn-sm:hover { background: rgba(255,255,255,0.08); color: #fff; }
-        .btn-sm.delete:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.3); }
+        .client-notes { font-size: 12px; color: #6b7280; font-style: italic; padding: 10px 12px; background: rgba(0,0,0,0.2); border-radius: 6px; margin-bottom: 14px; }
 
-        /* ── Detail View ── */
+        /* Detail View */
         .detail-view { animation: fadeIn 0.2s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        .detail-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
+        .detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
         .detail-header-name { font-size: 24px; font-weight: 700; color: #fff; }
         .detail-header-owner { font-size: 13px; color: #6b7280; margin-top: 4px; }
         .detail-header-badges { display: flex; gap: 8px; margin-top: 8px; }
         .detail-header-actions { display: flex; gap: 8px; }
-
         .detail-sections { display: flex; flex-direction: column; gap: 20px; }
-        .detail-section {
-            background: #111827; border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px; padding: 20px 24px;
-        }
-        .detail-section-title {
-            font-size: 11px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 1.2px; color: #7b68ee; margin-bottom: 16px;
-            padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
-        .detail-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px;
-        }
-        .detail-row {
-            display: flex; flex-direction: column; gap: 4px;
-        }
-        .detail-row-label {
-            font-size: 9px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.8px; color: #4b5563;
-        }
-        .detail-row-value {
-            font-size: 13px; color: #d1d5db; min-height: 22px;
-            padding: 4px 8px; margin: -4px -8px; border-radius: 6px;
-            border: 1px solid transparent; cursor: pointer; transition: all 0.15s;
-            word-break: break-word;
-        }
+        .detail-section { background: #111827; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px 24px; }
+        .detail-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #7b68ee; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; }
+        .detail-row { display: flex; flex-direction: column; gap: 4px; }
+        .detail-row-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #4b5563; }
+        .detail-row-value { font-size: 13px; color: #d1d5db; min-height: 22px; padding: 4px 8px; margin: -4px -8px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: all 0.15s; word-break: break-word; }
         .detail-row-value:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
         .detail-row-value a { color: #7b68ee; text-decoration: none; }
         .detail-row-value a:hover { text-decoration: underline; }
         .detail-row-value.money { color: #10b981; font-weight: 600; }
         .detail-row-value.placeholder { color: #374151; font-style: italic; }
-
-        .detail-edit-input {
-            font-size: 13px; color: #fff; background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(123,104,238,0.4); border-radius: 6px;
-            padding: 4px 8px; margin: -4px -8px; width: calc(100% + 16px);
-            outline: none; font-family: inherit; box-sizing: border-box;
-        }
+        .detail-edit-input { font-size: 13px; color: #fff; background: rgba(0,0,0,0.3); border: 1px solid rgba(123,104,238,0.4); border-radius: 6px; padding: 4px 8px; margin: -4px -8px; width: calc(100% + 16px); outline: none; font-family: inherit; }
         .detail-edit-input:focus { border-color: #7b68ee; }
-        .detail-edit-select {
-            font-size: 13px; color: #fff; background: #0a0e1a;
-            border: 1px solid rgba(123,104,238,0.4); border-radius: 6px;
-            padding: 4px 8px; margin: -4px -8px; width: calc(100% + 16px);
-            outline: none; font-family: inherit; appearance: auto;
-        }
-
-        .detail-notes-area {
-            width: 100%; min-height: 100px; resize: vertical;
-            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 8px; padding: 12px 14px; color: #d1d5db;
-            font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s;
-        }
+        .detail-edit-select { font-size: 13px; color: #fff; background: #0a0e1a; border: 1px solid rgba(123,104,238,0.4); border-radius: 6px; padding: 4px 8px; margin: -4px -8px; width: calc(100% + 16px); outline: none; font-family: inherit; appearance: auto; }
+        .detail-notes-area { width: 100%; min-height: 100px; resize: vertical; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; color: #d1d5db; font-size: 13px; font-family: inherit; outline: none; }
         .detail-notes-area:focus { border-color: #7b68ee; }
-
-        .seo-placeholder {
-            text-align: center; padding: 32px 20px; color: #374151;
-        }
+        .seo-placeholder { text-align: center; padding: 32px 20px; color: #374151; }
         .seo-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
         .seo-placeholder-text { font-size: 13px; }
 
+        /* Tabs */
+        .tab-bar { display: flex; gap: 4px; margin-bottom: 24px; }
+        .tab-btn { padding: 7px 18px; font-size: 12px; font-weight: 600; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .tab-btn:hover { color: #d1d5db; background: rgba(255,255,255,0.06); }
+        .tab-btn.active { background: rgba(123,104,238,0.15); color: #7b68ee; border-color: rgba(123,104,238,0.3); }
+
+        /* Template cards */
+        .tmpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+        .tmpl-card { background: #111827; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; cursor: pointer; transition: border-color 0.15s; }
+        .tmpl-card:hover { border-color: rgba(123,104,238,0.3); }
+        .tmpl-card-name { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .tmpl-card-preview { font-size: 11px; color: #4b5563; line-height: 1.5; max-height: 60px; overflow: hidden; }
+        .tmpl-editor { background: #111827; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 24px; }
+        .tmpl-editor-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 16px; }
+        .tmpl-editor-area { width: 100%; min-height: 500px; resize: vertical; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; color: #d1d5db; font-size: 13px; font-family: 'Courier New', monospace; line-height: 1.6; outline: none; }
+        .tmpl-editor-area:focus { border-color: #7b68ee; }
+        .tmpl-vars { font-size: 11px; color: #4b5563; margin-top: 12px; }
+        .tmpl-vars code { background: rgba(123,104,238,0.1); color: #7b68ee; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+
+        /* Sent contracts table */
+        .sc-table { width: 100%; border-collapse: collapse; }
+        .sc-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #4b5563; text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .sc-table td { font-size: 13px; color: #d1d5db; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .sc-table tr { cursor: pointer; transition: background 0.1s; }
+        .sc-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* Contract URL display */
+        .contract-url-box { margin-top: 12px; padding: 12px 16px; background: rgba(123,104,238,0.08); border: 1px solid rgba(123,104,238,0.2); border-radius: 8px; }
+        .contract-url-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #7b68ee; margin-bottom: 4px; }
+        .contract-url-link { font-size: 13px; color: #7b68ee; word-break: break-all; }
+
         /* Modal */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-            z-index: 1000; justify-content: center; align-items: center;
-        }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
         .modal-overlay.open { display: flex; }
-        .modal {
-            background: #111827; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px; padding: 28px; width: 520px; max-height: 90vh; overflow-y: auto;
-        }
+        .modal { background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 28px; width: 520px; max-height: 90vh; overflow-y: auto; }
         .modal-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 20px; }
         .form-row { display: flex; gap: 12px; margin-bottom: 14px; }
         .form-group { flex: 1; }
-        .form-label {
-            display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.8px; color: #6b7280; margin-bottom: 5px;
-        }
-        .form-input, .form-select, .form-textarea {
-            width: 100%; padding: 9px 12px; background: #0a0e1a;
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 7px;
-            color: #fff; font-size: 13px; font-family: inherit; outline: none;
-        }
+        .form-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #6b7280; margin-bottom: 5px; }
+        .form-input, .form-select, .form-textarea { width: 100%; padding: 9px 12px; background: #0a0e1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 7px; color: #fff; font-size: 13px; font-family: inherit; outline: none; }
         .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #7b68ee; }
         .form-select { appearance: auto; }
         .form-textarea { min-height: 60px; resize: vertical; }
         .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-        .btn-cancel {
-            padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
-            cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9ca3af;
-        }
+        .btn-cancel { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9ca3af; }
         .btn-cancel:hover { color: #fff; }
-        .btn-save {
-            padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
-            cursor: pointer; background: #7b68ee; border: none; color: #fff;
-        }
+        .btn-save { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: #7b68ee; border: none; color: #fff; }
         .btn-save:hover { background: #6952e0; }
-
         .empty-state { text-align: center; padding: 60px 20px; color: #4b5563; }
         .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
         .empty-state-text { font-size: 14px; }
@@ -240,102 +152,43 @@
     <aside class="sidebar">
         <div class="sidebar-brand">Iron<span>Spider</span></div>
         <nav class="sidebar-nav">
-            <div class="nav-item active" data-view="clients">Clients</div>
+            <div class="nav-item" data-view="clients" onclick="switchSection('clients')">Clients</div>
+            <div class="nav-item" data-view="contracts" onclick="switchSection('contracts')">Contracts</div>
         </nav>
     </aside>
 
     <div class="main">
         <div class="topbar" id="topbar">
-            <div class="topbar-left">
-                <div class="topbar-title">Clients</div>
-            </div>
-            <button class="btn-add" id="btnAdd" onclick="openModal()">+ Add Client</button>
+            <div class="topbar-left" id="topbarLeft"><div class="topbar-title">Clients</div></div>
+            <div id="topbarRight"><button class="btn-add" id="btnAdd" onclick="openModal()">+ Add Client</button></div>
         </div>
         <div class="content" id="content">
-            <div id="listView">
-                <div class="summary-bar" id="summaryBar"></div>
-                <div class="clients-grid" id="clientsGrid"></div>
+            <!-- Clients section -->
+            <div id="clientsSection">
+                <div id="listView">
+                    <div class="summary-bar" id="summaryBar"></div>
+                    <div class="clients-grid" id="clientsGrid"></div>
+                </div>
+                <div id="detailView" style="display:none;"></div>
             </div>
-            <div id="detailView" style="display:none;"></div>
+            <!-- Contracts section -->
+            <div id="contractsSection" style="display:none;"></div>
         </div>
     </div>
 
-    <!-- Add/Edit Modal -->
+    <!-- Add/Edit Client Modal -->
     <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModal()">
         <div class="modal">
             <div class="modal-title" id="modalTitle">Add Client</div>
             <input type="hidden" id="editId">
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Business Name *</label>
-                    <input class="form-input" id="fName" placeholder="Presidio Dental Care">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Owner Name</label>
-                    <input class="form-input" id="fOwner" placeholder="Dr. Smith">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Phone</label>
-                    <input class="form-input" id="fPhone" placeholder="(520) 555-0142">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input class="form-input" id="fEmail" placeholder="office@example.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Website URL</label>
-                    <input class="form-input" id="fUrl" placeholder="https://example.com">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Plan</label>
-                    <select class="form-select" id="fPlan">
-                        <option>Website Only</option>
-                        <option>SEO Only</option>
-                        <option>Website + SEO</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Stripe Status</label>
-                    <select class="form-select" id="fStripe">
-                        <option>Pending</option>
-                        <option>Active</option>
-                        <option>Failed</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Monthly MRR ($)</label>
-                    <input class="form-input" id="fMrr" type="number" min="0" value="250">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Initial Payment ($)</label>
-                    <input class="form-input" id="fInitial" type="number" min="0" value="750">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Contract Start Date</label>
-                    <input class="form-input" id="fStartDate" type="date">
-                </div>
-                <div class="form-group"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Notes</label>
-                    <textarea class="form-textarea" id="fNotes" placeholder="Any notes about this client..."></textarea>
-                </div>
-            </div>
-            <div class="form-actions">
-                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-                <button class="btn-save" onclick="saveClient()">Save Client</button>
-            </div>
+            <div class="form-row"><div class="form-group"><label class="form-label">Business Name *</label><input class="form-input" id="fName" placeholder="Presidio Dental Care"></div></div>
+            <div class="form-row"><div class="form-group"><label class="form-label">Owner Name</label><input class="form-input" id="fOwner" placeholder="Dr. Smith"></div><div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="fPhone" placeholder="(520) 555-0142"></div></div>
+            <div class="form-row"><div class="form-group"><label class="form-label">Email</label><input class="form-input" id="fEmail" placeholder="office@example.com"></div><div class="form-group"><label class="form-label">Website URL</label><input class="form-input" id="fUrl" placeholder="https://example.com"></div></div>
+            <div class="form-row"><div class="form-group"><label class="form-label">Plan</label><select class="form-select" id="fPlan"><option>Website Only</option><option>SEO Only</option><option>Website + SEO</option></select></div><div class="form-group"><label class="form-label">Stripe Status</label><select class="form-select" id="fStripe"><option>Pending</option><option>Active</option><option>Failed</option></select></div></div>
+            <div class="form-row"><div class="form-group"><label class="form-label">Monthly MRR ($)</label><input class="form-input" id="fMrr" type="number" min="0" value="250"></div><div class="form-group"><label class="form-label">Initial Payment ($)</label><input class="form-input" id="fInitial" type="number" min="0" value="750"></div></div>
+            <div class="form-row"><div class="form-group"><label class="form-label">Contract Start Date</label><input class="form-input" id="fStartDate" type="date"></div><div class="form-group"></div></div>
+            <div class="form-row"><div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="fNotes" placeholder="Any notes about this client..."></textarea></div></div>
+            <div class="form-actions"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="saveClient()">Save Client</button></div>
         </div>
     </div>
 
@@ -343,56 +196,75 @@
         var clients = [];
         var currentDetail = null;
         var saveTimer = null;
+        var activeSection = 'clients';
+        var templates = [];
+        var sentContracts = [];
 
-        function esc(s) {
-            if (!s) return '';
-            var d = document.createElement('div');
-            d.textContent = s;
-            return d.innerHTML;
+        function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        function formatDate(d) {
+            if (!d) return '';
+            var p = d.split('-'); if (p.length !== 3) return d;
+            var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return m[parseInt(p[1],10)-1] + ' ' + parseInt(p[2],10) + ', ' + p[0];
         }
 
-        function linkOrDash(url, label) {
-            if (!url) return '<span class="placeholder">Not set</span>';
-            return '<a href="' + esc(url) + '" target="_blank" onclick="event.stopPropagation()">' + esc(label || url.replace(/^https?:\/\//, '')) + '</a>';
+        function stripeBadge(status) {
+            var cls = status === 'Active' ? 'badge-active' : (status === 'Failed' || status === 'Cancelled' || status === 'Expired' ? 'badge-failed' : 'badge-pending');
+            return '<span class="badge ' + cls + '">' + esc(status) + '</span>';
         }
 
-        /* ── Data ── */
+        function contractBadge(status) {
+            if (status === 'Signed') return '<span class="badge badge-active">SIGNED</span>';
+            if (status === 'Expired') return '<span class="badge badge-failed">EXPIRED</span>';
+            return '<span class="badge badge-pending">PENDING SIGNATURE</span>';
+        }
+
+        /* ── Section switching ── */
+
+        function switchSection(section) {
+            activeSection = section;
+            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.toggle('active', n.dataset.view === section); });
+            document.getElementById('clientsSection').style.display = section === 'clients' ? '' : 'none';
+            document.getElementById('contractsSection').style.display = section === 'contracts' ? '' : 'none';
+            if (section === 'clients') {
+                showList();
+            } else {
+                document.getElementById('topbarLeft').innerHTML = '<div class="topbar-title">Contracts</div>';
+                document.getElementById('topbarRight').innerHTML = '';
+                loadContracts();
+            }
+        }
+
+        /* ── Clients: Data ── */
 
         function loadClients() {
-            fetch('/api/clients')
-                .then(function(r) { return r.json(); })
-                .then(function(data) { clients = data; renderList(); });
+            fetch('/api/clients').then(function(r) { return r.json(); }).then(function(data) { clients = data; renderList(); });
         }
 
         function patchClient(id, updates, cb) {
-            fetch('/api/clients/' + id, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updates),
-            }).then(function(r) { return r.json(); })
-              .then(function(data) {
-                  var idx = clients.findIndex(function(c) { return c.id === id; });
-                  if (idx > -1) clients[idx] = data;
-                  if (currentDetail && currentDetail.id === id) currentDetail = data;
-                  if (cb) cb(data);
-              });
+            fetch('/api/clients/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var idx = clients.findIndex(function(c) { return c.id === id; });
+                    if (idx > -1) clients[idx] = data;
+                    if (currentDetail && currentDetail.id === id) currentDetail = data;
+                    if (cb) cb(data);
+                });
         }
 
-        /* ── List View ── */
+        /* ── Clients: List ── */
 
         function showList() {
             currentDetail = null;
             document.getElementById('listView').style.display = '';
             document.getElementById('detailView').style.display = 'none';
-            document.getElementById('btnAdd').style.display = '';
-            document.querySelector('.topbar-left').innerHTML = '<div class="topbar-title">Clients</div>';
+            document.getElementById('topbarLeft').innerHTML = '<div class="topbar-title">Clients</div>';
+            document.getElementById('topbarRight').innerHTML = '<button class="btn-add" onclick="openModal()">+ Add Client</button>';
             renderList();
         }
 
-        function renderList() {
-            renderSummary();
-            renderGrid();
-        }
+        function renderList() { renderSummary(); renderGrid(); }
 
         function renderSummary() {
             var total = clients.length, mrr = 0, initial = 0;
@@ -403,27 +275,14 @@
                 '<div class="summary-card"><div class="summary-label">Initial Revenue</div><div class="summary-value money">$' + initial.toLocaleString() + '</div></div>';
         }
 
-        function stripeBadge(status) {
-            var cls = status === 'Active' ? 'badge-active' : (status === 'Failed' || status === 'Cancelled' || status === 'Expired' ? 'badge-failed' : 'badge-pending');
-            return '<span class="badge ' + cls + '">' + esc(status) + '</span>';
-        }
-
         function renderGrid() {
             var grid = document.getElementById('clientsGrid');
-            if (!clients.length) {
-                grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128101;</div><div class="empty-state-text">No clients yet. Click "+ Add Client" to get started.</div></div>';
-                return;
-            }
+            if (!clients.length) { grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128101;</div><div class="empty-state-text">No clients yet.</div></div>'; return; }
             var html = '';
             clients.forEach(function(c) {
                 html += '<div class="client-card" onclick="openDetail(' + c.id + ')">';
-                html += '<div class="client-card-header">';
-                html += '<div><div class="client-name">' + esc(c.business_name) + '</div>';
-                html += '<div class="client-owner">' + esc(c.owner_name) + '</div></div>';
-                html += '<div class="client-badges">';
-                html += '<span class="badge badge-plan">' + esc(c.plan) + '</span>';
-                html += stripeBadge(c.stripe_status);
-                html += '</div></div>';
+                html += '<div class="client-card-header"><div><div class="client-name">' + esc(c.business_name) + '</div><div class="client-owner">' + esc(c.owner_name) + '</div></div>';
+                html += '<div class="client-badges"><span class="badge badge-plan">' + esc(c.plan) + '</span>' + stripeBadge(c.stripe_status) + '</div></div>';
                 html += '<div class="client-fields">';
                 html += field('Phone', c.phone ? '<a href="tel:' + esc(c.phone) + '" onclick="event.stopPropagation()">' + esc(c.phone) + '</a>' : '—');
                 html += field('Email', c.email ? '<a href="mailto:' + esc(c.email) + '" onclick="event.stopPropagation()">' + esc(c.email) + '</a>' : '—');
@@ -436,21 +295,17 @@
             grid.innerHTML = html;
         }
 
-        function field(label, value) {
-            return '<div><div class="client-field-label">' + label + '</div><div class="client-field-value">' + value + '</div></div>';
-        }
+        function field(label, value) { return '<div><div class="client-field-label">' + label + '</div><div class="client-field-value">' + value + '</div></div>'; }
 
-        /* ── Detail View ── */
+        /* ── Clients: Detail ── */
 
         function openDetail(id) {
             var c = clients.find(function(x) { return x.id === id; });
             if (!c) return;
             currentDetail = c;
             document.getElementById('listView').style.display = 'none';
-            document.getElementById('btnAdd').style.display = 'none';
-            document.querySelector('.topbar-left').innerHTML =
-                '<button class="btn-back" onclick="showList()">&larr; Back</button>' +
-                '<div class="topbar-title">' + esc(c.business_name) + '</div>';
+            document.getElementById('topbarLeft').innerHTML = '<button class="btn-back" onclick="showList()">&larr; Back</button><div class="topbar-title">' + esc(c.business_name) + '</div>';
+            document.getElementById('topbarRight').innerHTML = '';
             renderDetail();
             document.getElementById('detailView').style.display = '';
             document.getElementById('content').scrollTop = 0;
@@ -459,27 +314,19 @@
         function renderDetail() {
             var c = currentDetail;
             var html = '<div class="detail-view">';
-
-            // Header
-            html += '<div class="detail-header">';
-            html += '<div>';
+            html += '<div class="detail-header"><div>';
             html += '<div class="detail-header-name">' + esc(c.business_name) + '</div>';
             html += '<div class="detail-header-owner">' + esc(c.owner_name) + '</div>';
-            html += '<div class="detail-header-badges">';
-            html += '<span class="badge badge-plan">' + esc(c.plan) + '</span>';
-            html += stripeBadge(c.stripe_status);
-            html += '</div></div>';
-            html += '<div class="detail-header-actions">';
+            html += '<div class="detail-header-badges"><span class="badge badge-plan">' + esc(c.plan) + '</span>' + stripeBadge(c.stripe_status) + '</div>';
+            html += '</div><div class="detail-header-actions">';
+            html += '<button class="btn-sm primary" onclick="sendContract(' + c.id + ')">Send Contract</button>';
             html += '<button class="btn-sm" onclick="editClient(' + c.id + ')">Edit</button>';
             html += '<button class="btn-sm delete" onclick="deleteClient(' + c.id + ')">Delete</button>';
             html += '</div></div>';
-
             html += '<div class="detail-sections">';
 
             // Overview
-            html += '<div class="detail-section">';
-            html += '<div class="detail-section-title">Overview</div>';
-            html += '<div class="detail-grid">';
+            html += '<div class="detail-section"><div class="detail-section-title">Overview</div><div class="detail-grid">';
             html += editableRow(c, 'business_name', 'Business Name');
             html += editableRow(c, 'owner_name', 'Owner Name');
             html += editableRow(c, 'phone', 'Phone');
@@ -488,18 +335,14 @@
             html += '</div></div>';
 
             // Deployment
-            html += '<div class="detail-section">';
-            html += '<div class="detail-section-title">Deployment</div>';
-            html += '<div class="detail-grid">';
+            html += '<div class="detail-section"><div class="detail-section-title">Deployment</div><div class="detail-grid">';
             html += editableRow(c, 'github_repo', 'GitHub Repo', 'link');
             html += editableRow(c, 'cloudflare_url', 'Cloudflare URL', 'link');
             html += editableRow(c, 'live_url', 'Live Site URL', 'link');
             html += '</div></div>';
 
             // Assets
-            html += '<div class="detail-section">';
-            html += '<div class="detail-section-title">Assets</div>';
-            html += '<div class="detail-grid">';
+            html += '<div class="detail-section"><div class="detail-section-title">Assets</div><div class="detail-grid">';
             html += editableRow(c, 'google_business', 'Google Business Profile', 'link');
             html += editableRow(c, 'google_search_console', 'Google Search Console', 'link');
             html += editableRow(c, 'google_analytics', 'Google Analytics', 'link');
@@ -507,17 +350,11 @@
             html += '</div></div>';
 
             // SEO
-            html += '<div class="detail-section">';
-            html += '<div class="detail-section-title">SEO</div>';
-            html += '<div class="seo-placeholder">';
-            html += '<div class="seo-placeholder-icon">&#128270;</div>';
-            html += '<div class="seo-placeholder-text">SEO tracking coming soon</div>';
-            html += '</div></div>';
+            html += '<div class="detail-section"><div class="detail-section-title">SEO</div>';
+            html += '<div class="seo-placeholder"><div class="seo-placeholder-icon">&#128270;</div><div class="seo-placeholder-text">SEO tracking coming soon</div></div></div>';
 
             // Contract & Billing
-            html += '<div class="detail-section">';
-            html += '<div class="detail-section-title">Contract & Billing</div>';
-            // Contract
+            html += '<div class="detail-section"><div class="detail-section-title">Contract & Billing</div>';
             html += '<div class="detail-grid">';
             html += editableSelect(c, 'plan', 'Plan', ['Website Only', 'SEO Only', 'Website + SEO']);
             html += editableSelect(c, 'contract_length', 'Contract Length', ['Month-to-Month', '6 Months', 'Annual']);
@@ -525,134 +362,83 @@
             html += editableRow(c, 'start_date', 'Start Date', 'date');
             html += editableRow(c, 'contract_doc_url', 'Contract Document', 'link');
             html += '</div>';
-            // Divider
             html += '<div style="border-top:1px solid rgba(255,255,255,0.06);margin:20px 0;"></div>';
-            // Billing
             html += '<div class="detail-grid">';
             html += editableSelect(c, 'stripe_status', 'Stripe Status', ['Active', 'Pending', 'Failed']);
             html += editableRow(c, 'mrr', 'Monthly MRR', 'money');
             html += editableRow(c, 'initial_payment', 'Initial Payment', 'money');
             html += '<div class="detail-row"><div class="detail-row-label">Total Paid to Date</div><div class="detail-row-value" style="cursor:default;"><span class="money">$0</span> <span style="color:#4b5563;font-size:11px;font-style:italic;margin-left:6px;">Pending Stripe connection</span></div></div>';
             html += '</div>';
-            // Payment history
             var hist = c.payment_history || [];
-            html += '<div style="margin-top:16px;">';
-            html += '<div class="detail-row-label" style="margin-bottom:8px;">Payment History</div>';
-            if (hist.length) {
-                hist.forEach(function(h) {
-                    html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;">';
-                    html += '<span style="color:#9ca3af;">' + esc(h.date) + '</span>';
-                    html += '<span style="color:#10b981;font-weight:600;">$' + (h.amount || 0).toLocaleString() + '</span>';
-                    html += '<span style="color:#6b7280;">' + esc(h.note || '') + '</span>';
-                    html += '</div>';
-                });
-            } else {
-                html += '<div style="color:#374151;font-size:12px;font-style:italic;">No payments recorded</div>';
-            }
+            html += '<div style="margin-top:16px;"><div class="detail-row-label" style="margin-bottom:8px;">Payment History</div>';
+            if (hist.length) { hist.forEach(function(h) { html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;"><span style="color:#9ca3af;">' + esc(h.date) + '</span><span style="color:#10b981;font-weight:600;">$' + (h.amount||0).toLocaleString() + '</span><span style="color:#6b7280;">' + esc(h.note||'') + '</span></div>'; }); }
+            else { html += '<div style="color:#374151;font-size:12px;font-style:italic;">No payments recorded</div>'; }
             html += '</div></div>';
 
             // Notes
-            html += '<div class="detail-section">';
-            html += '<div class="detail-section-title">Notes</div>';
+            html += '<div class="detail-section"><div class="detail-section-title">Notes</div>';
             html += '<textarea class="detail-notes-area" id="detailNotes" oninput="autoSaveNotes(' + c.id + ')" placeholder="Add notes...">' + esc(c.notes) + '</textarea>';
             html += '</div>';
+
+            // Send Contract URL placeholder
+            html += '<div id="contractUrlBox"></div>';
 
             html += '</div></div>';
             document.getElementById('detailView').innerHTML = html;
         }
 
-        function formatDate(d) {
-            if (!d) return '';
-            var parts = d.split('-');
-            if (parts.length !== 3) return d;
-            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            return months[parseInt(parts[1],10)-1] + ' ' + parseInt(parts[2],10) + ', ' + parts[0];
-        }
-
         function editableRow(c, key, label, type) {
-            var val = c[key];
-            var display;
-            if (type === 'link') {
-                display = val ? '<a href="' + esc(val) + '" target="_blank" onclick="event.stopPropagation()">' + esc(val.replace(/^https?:\/\//, '')) + ' &nearr;</a>'
-                    : '<span class="placeholder">Not set</span>';
-            } else if (type === 'money') {
-                display = '<span class="money">$' + (parseFloat(val) || 0).toLocaleString() + '</span>';
-            } else if (type === 'date') {
-                display = val ? esc(formatDate(val)) : '<span class="placeholder">Not set</span>';
-            } else {
-                display = val ? esc(val) : '<span class="placeholder">Not set</span>';
-            }
-            return '<div class="detail-row">' +
-                '<div class="detail-row-label">' + label + '</div>' +
-                '<div class="detail-row-value" onclick="startEdit(this,' + c.id + ',\'' + key + '\',\'' + (type || 'text') + '\')">' + display + '</div>' +
-                '</div>';
+            var val = c[key], display;
+            if (type === 'link') { display = val ? '<a href="' + esc(val) + '" target="_blank" onclick="event.stopPropagation()">' + esc(val.replace(/^https?:\/\//, '')) + ' &nearr;</a>' : '<span class="placeholder">Not set</span>'; }
+            else if (type === 'money') { display = '<span class="money">$' + (parseFloat(val) || 0).toLocaleString() + '</span>'; }
+            else if (type === 'date') { display = val ? esc(formatDate(val)) : '<span class="placeholder">Not set</span>'; }
+            else { display = val ? esc(val) : '<span class="placeholder">Not set</span>'; }
+            return '<div class="detail-row"><div class="detail-row-label">' + label + '</div><div class="detail-row-value" onclick="startEdit(this,' + c.id + ',\'' + key + '\',\'' + (type||'text') + '\')">' + display + '</div></div>';
         }
 
         function editableSelect(c, key, label, options) {
-            var val = c[key] || options[0];
-            var display;
-            if (key === 'stripe_status' || key === 'contract_status') {
-                display = stripeBadge(val);
-            } else {
-                display = esc(val);
-            }
-            return '<div class="detail-row">' +
-                '<div class="detail-row-label">' + label + '</div>' +
-                '<div class="detail-row-value" onclick="startSelectEdit(this,' + c.id + ',\'' + key + '\',' + JSON.stringify(options) + ')">' + display + '</div>' +
-                '</div>';
+            var val = c[key] || options[0], display;
+            if (key === 'stripe_status' || key === 'contract_status') { display = stripeBadge(val); } else { display = esc(val); }
+            return '<div class="detail-row"><div class="detail-row-label">' + label + '</div><div class="detail-row-value" onclick="startSelectEdit(this,' + c.id + ',\'' + key + '\',' + JSON.stringify(options) + ')">' + display + '</div></div>';
         }
 
         function startEdit(el, id, key, type) {
             if (el.querySelector('input')) return;
-            var c = currentDetail;
-            var val = c[key] || '';
+            var c = currentDetail, val = c[key] || '';
             if (type === 'money') val = parseFloat(val) || 0;
             var inputType = type === 'money' ? 'type="number" min="0" step="0.01"' : (type === 'date' ? 'type="date"' : '');
             el.innerHTML = '<input class="detail-edit-input" value="' + esc(String(val)) + '" ' + inputType + '>';
-            var inp = el.querySelector('input');
-            inp.focus();
-            inp.addEventListener('blur', function() {
-                var newVal = inp.value.trim();
-                if (type === 'money') newVal = parseFloat(newVal) || 0;
-                var update = {};
-                update[key] = newVal;
-                patchClient(id, update, function() { renderDetail(); });
-            });
-            inp.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') inp.blur();
-                if (e.key === 'Escape') { renderDetail(); }
-            });
+            var inp = el.querySelector('input'); inp.focus();
+            inp.addEventListener('blur', function() { var v = inp.value.trim(); if (type === 'money') v = parseFloat(v) || 0; var u = {}; u[key] = v; patchClient(id, u, function() { renderDetail(); }); });
+            inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') renderDetail(); });
         }
 
         function startSelectEdit(el, id, key, options) {
             if (el.querySelector('select')) return;
-            var c = currentDetail;
-            var val = c[key] || options[0];
-            var html = '<select class="detail-edit-select">';
-            options.forEach(function(o) {
-                html += '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>';
-            });
-            html += '</select>';
-            el.innerHTML = html;
-            var sel = el.querySelector('select');
-            sel.focus();
-            sel.addEventListener('change', function() {
-                var update = {};
-                update[key] = sel.value;
-                patchClient(id, update, function() { renderDetail(); });
-            });
+            var c = currentDetail, val = c[key] || options[0];
+            var html = '<select class="detail-edit-select">'; options.forEach(function(o) { html += '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>'; }); html += '</select>';
+            el.innerHTML = html; var sel = el.querySelector('select'); sel.focus();
+            sel.addEventListener('change', function() { var u = {}; u[key] = sel.value; patchClient(id, u, function() { renderDetail(); }); });
             sel.addEventListener('blur', function() { renderDetail(); });
         }
 
-        function autoSaveNotes(id) {
-            clearTimeout(saveTimer);
-            saveTimer = setTimeout(function() {
-                var el = document.getElementById('detailNotes');
-                if (el) patchClient(id, { notes: el.value });
-            }, 600);
+        function autoSaveNotes(id) { clearTimeout(saveTimer); saveTimer = setTimeout(function() { var el = document.getElementById('detailNotes'); if (el) patchClient(id, { notes: el.value }); }, 600); }
+
+        /* ── Send Contract from Detail ── */
+
+        function sendContract(clientId) {
+            fetch('/api/contracts/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: clientId }) })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.error) { alert(data.error); return; }
+                    var box = document.getElementById('contractUrlBox');
+                    var url = location.origin + data.url;
+                    box.innerHTML = '<div class="contract-url-box"><div class="contract-url-label">Contract Signing Link</div><a class="contract-url-link" href="' + esc(url) + '" target="_blank">' + esc(url) + '</a></div>';
+                    box.scrollIntoView({ behavior: 'smooth' });
+                });
         }
 
-        /* ── Modal (Add/Edit) ── */
+        /* ── Client Modal ── */
 
         function openModal(c) {
             document.getElementById('modalTitle').textContent = c ? 'Edit Client' : 'Add Client';
@@ -689,35 +475,126 @@
                 notes: document.getElementById('fNotes').value.trim(),
             };
             if (!payload.business_name) { alert('Business name is required'); return; }
-            var url = id ? '/api/clients/' + id : '/api/clients';
-            var method = id ? 'PUT' : 'POST';
-            fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            }).then(function(r) { return r.json(); })
-              .then(function(data) {
-                  closeModal();
-                  loadClients();
-                  if (id && currentDetail) openDetail(parseInt(id));
-              });
+            fetch(id ? '/api/clients/' + id : '/api/clients', { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+                .then(function(r) { return r.json(); })
+                .then(function(data) { closeModal(); loadClients(); if (id && currentDetail) openDetail(parseInt(id)); });
         }
 
-        function editClient(id) {
-            var c = clients.find(function(x) { return x.id === id; });
-            if (c) openModal(c);
-        }
+        function editClient(id) { var c = clients.find(function(x) { return x.id === id; }); if (c) openModal(c); }
 
         function deleteClient(id) {
             if (!confirm('Delete this client?')) return;
-            fetch('/api/clients/' + id, { method: 'DELETE' })
-                .then(function() {
-                    loadClients();
-                    if (currentDetail && currentDetail.id === id) showList();
+            fetch('/api/clients/' + id, { method: 'DELETE' }).then(function() { loadClients(); if (currentDetail && currentDetail.id === id) showList(); });
+        }
+
+        /* ── Contracts Section ── */
+
+        var contractTab = 'templates';
+        var editingTemplate = null;
+
+        function loadContracts() {
+            Promise.all([
+                fetch('/api/templates').then(function(r) { return r.json(); }),
+                fetch('/api/contracts').then(function(r) { return r.json(); }),
+            ]).then(function(results) {
+                templates = results[0];
+                sentContracts = results[1];
+                renderContracts();
+            });
+        }
+
+        function renderContracts() {
+            var html = '';
+            html += '<div class="tab-bar">';
+            html += '<button class="tab-btn' + (contractTab === 'templates' ? ' active' : '') + '" onclick="contractTab=\'templates\';editingTemplate=null;renderContracts();">Templates</button>';
+            html += '<button class="tab-btn' + (contractTab === 'sent' ? ' active' : '') + '" onclick="contractTab=\'sent\';editingTemplate=null;renderContracts();">Sent Contracts</button>';
+            html += '</div>';
+
+            if (contractTab === 'templates') {
+                if (editingTemplate) {
+                    html += renderTemplateEditor();
+                } else {
+                    html += '<div class="tmpl-grid">';
+                    templates.forEach(function(t) {
+                        var preview = (t.content || '').substring(0, 150).replace(/\n/g, ' ');
+                        html += '<div class="tmpl-card" onclick="editingTemplate=' + t.id + ';renderContracts();">';
+                        html += '<div class="tmpl-card-name">' + esc(t.plan_type) + '</div>';
+                        html += '<div class="tmpl-card-preview">' + esc(preview) + '...</div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+            } else {
+                html += renderSentTable();
+            }
+
+            document.getElementById('contractsSection').innerHTML = html;
+        }
+
+        function renderTemplateEditor() {
+            var t = templates.find(function(x) { return x.id === editingTemplate; });
+            if (!t) return '';
+            var html = '<div class="tmpl-editor">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
+            html += '<div class="tmpl-editor-title">' + esc(t.plan_type) + ' Template</div>';
+            html += '<div style="display:flex;gap:8px;"><button class="btn-back" onclick="editingTemplate=null;renderContracts();">&larr; Back</button><button class="btn-save" onclick="saveTemplate(' + t.id + ')">Save Template</button></div>';
+            html += '</div>';
+            html += '<textarea class="tmpl-editor-area" id="tmplContent">' + esc(t.content) + '</textarea>';
+            html += '<div class="tmpl-vars">Available variables: <code>{{client_name}}</code> <code>{{owner_name}}</code> <code>{{plan}}</code> <code>{{mrr}}</code> <code>{{initial_payment}}</code> <code>{{start_date}}</code> <code>{{contract_length}}</code></div>';
+            html += '</div>';
+            return html;
+        }
+
+        function saveTemplate(id) {
+            var content = document.getElementById('tmplContent').value;
+            fetch('/api/templates/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: content }) })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var idx = templates.findIndex(function(t) { return t.id === id; });
+                    if (idx > -1) templates[idx] = data;
+                    alert('Template saved!');
                 });
         }
 
+        function renderSentTable() {
+            if (!sentContracts.length) return '<div class="empty-state"><div class="empty-state-icon">&#128196;</div><div class="empty-state-text">No contracts sent yet. Send one from a client detail page.</div></div>';
+            var html = '<table class="sc-table"><thead><tr><th>Client</th><th>Contract Type</th><th>Date Sent</th><th>Status</th></tr></thead><tbody>';
+            sentContracts.forEach(function(sc) {
+                html += '<tr onclick="viewSentContract(\'' + sc.id + '\')">';
+                html += '<td>' + esc(sc.client_name) + '</td>';
+                html += '<td>' + esc(sc.plan_type) + '</td>';
+                html += '<td>' + (sc.sent_at ? esc(formatDate(sc.sent_at.substring(0, 10))) : '—') + '</td>';
+                html += '<td>' + contractBadge(sc.status) + '</td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            return html;
+        }
+
+        function viewSentContract(id) {
+            var sc = sentContracts.find(function(x) { return x.id === id; });
+            if (!sc) return;
+            var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">';
+            html += '<button class="btn-back" onclick="renderContracts()">&larr; Back</button>';
+            html += contractBadge(sc.status);
+            html += '</div>';
+            html += '<div class="detail-section"><div class="detail-section-title">Contract for ' + esc(sc.client_name) + '</div>';
+            html += '<div style="white-space:pre-wrap;font-size:13px;line-height:1.7;color:#d1d5db;">' + esc(sc.filled_content) + '</div>';
+            if (sc.status === 'Signed') {
+                html += '<div style="margin-top:20px;padding:16px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;">';
+                html += '<div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:4px;">Signed by ' + esc(sc.signer_name) + '</div>';
+                html += '<div style="font-size:11px;color:#6b7280;">' + esc(formatDate(sc.signed_at ? sc.signed_at.substring(0,10) : '')) + ' &middot; IP: ' + esc(sc.signer_ip) + '</div>';
+                html += '</div>';
+            }
+            html += '</div>';
+            var url = location.origin + '/contract/' + sc.id;
+            html += '<div class="contract-url-box" style="margin-top:16px;"><div class="contract-url-label">Public Signing Link</div><a class="contract-url-link" href="' + esc(url) + '" target="_blank">' + esc(url) + '</a></div>';
+            document.getElementById('contractsSection').innerHTML = html;
+        }
+
+        /* ── Init ── */
         loadClients();
+        switchSection('contracts');
     </script>
 </body>
 </html>
