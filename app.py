@@ -1,8 +1,7 @@
 from flask import Flask, send_from_directory, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, date
+from datetime import datetime
 import json
-import math
 import os
 
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -44,20 +43,6 @@ class Client(db.Model):
     total_paid = db.Column(db.Float, default=0)
     payment_history = db.Column(db.Text, default='[]')
 
-    def calc_total_paid(self):
-        if not self.start_date or not self.mrr:
-            return self.initial_payment or 0
-        try:
-            sd = datetime.strptime(self.start_date, '%Y-%m-%d').date()
-        except (ValueError, TypeError):
-            return self.initial_payment or 0
-        today = date.today()
-        months = (today.year - sd.year) * 12 + (today.month - sd.month)
-        if today.day >= sd.day:
-            months += 1
-        months = max(months, 0)
-        return (months * (self.mrr or 0)) + (self.initial_payment or 0)
-
     def to_dict(self):
         return {
             'id': self.id,
@@ -80,7 +65,7 @@ class Client(db.Model):
             'google_search_console': self.google_search_console or '',
             'google_analytics': self.google_analytics or '',
             'login_credentials': self.login_credentials or '',
-            'total_paid': self.calc_total_paid(),
+            'total_paid': self.total_paid or 0,
             'payment_history': json.loads(self.payment_history or '[]'),
         }
 

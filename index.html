@@ -523,7 +523,7 @@
             html += editableSelect(c, 'stripe_status', 'Stripe Status', ['Active', 'Pending', 'Failed']);
             html += editableRow(c, 'mrr', 'Monthly MRR', 'money');
             html += editableRow(c, 'initial_payment', 'Initial Payment', 'money');
-            html += '<div class="detail-row"><div class="detail-row-label">Total Paid to Date</div><div class="detail-row-value money" style="cursor:default;">$' + (c.total_paid || 0).toLocaleString() + '</div></div>';
+            html += '<div class="detail-row"><div class="detail-row-label">Total Paid to Date</div><div class="detail-row-value" style="cursor:default;"><span class="money">$0</span> <span style="color:#4b5563;font-size:11px;font-style:italic;margin-left:6px;">Pending Stripe connection</span></div></div>';
             html += '</div>';
             // Payment history
             var hist = c.payment_history || [];
