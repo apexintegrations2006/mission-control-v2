@@ -531,18 +531,86 @@
             document.getElementById('contractsSection').innerHTML = html;
         }
 
+        var sampleMeta = {
+            client_name: 'Presidio Dental Care', owner_name: 'Dr. Maria Santos',
+            plan: 'Website + SEO', mrr: '450', initial_payment: '1500',
+            start_date: '2026-04-05', contract_length: 'Month-to-Month'
+        };
+
+        function fillPreview(content) {
+            var t = content;
+            Object.keys(sampleMeta).forEach(function(k) { t = t.split('{{' + k + '}}').join(sampleMeta[k]); });
+            return t;
+        }
+
+        function docPreviewHtml(bodyText, meta) {
+            var m = meta || sampleMeta;
+            var h = '';
+            h += '<div style="max-width:816px;margin:0 auto;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.12);border-radius:2px;padding:48px 56px 36px;font-family:Georgia,serif;color:#1e293b;">';
+            // Letterhead
+            h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #1e293b;">';
+            h += '<div style="font-size:17px;font-weight:800;font-family:-apple-system,sans-serif;color:#1e293b;">Apex<span style="color:#7b68ee;">Integrations</span></div>';
+            h += '<div style="text-align:right;font-size:10px;color:#64748b;line-height:1.6;font-family:-apple-system,sans-serif;">Apex Integrations LLC<br>Tucson, Arizona</div>';
+            h += '</div>';
+            // Title
+            h += '<div style="text-align:center;font-size:18px;font-weight:700;letter-spacing:1px;margin-bottom:22px;text-transform:uppercase;">Service Agreement</div>';
+            // Summary
+            h += '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:16px 20px;margin-bottom:24px;font-family:-apple-system,sans-serif;">';
+            h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;">';
+            h += sItem('Client', m.owner_name) + sItem('Business', m.client_name);
+            h += sItem('Plan', m.plan) + sItem('Contract Length', m.contract_length);
+            h += sItem('Monthly Retainer', '$' + m.mrr + '/mo') + sItem('Initial Payment', '$' + m.initial_payment);
+            h += sItem('Start Date', m.start_date);
+            h += '</div></div>';
+            // Body
+            h += '<div style="font-size:12.5px;line-height:1.8;color:#334155;white-space:pre-wrap;">' + esc(bodyText) + '</div>';
+            // Signature
+            h += '<div style="border-top:1px solid #cbd5e1;padding-top:24px;margin-top:32px;">';
+            h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;font-family:-apple-system,sans-serif;">';
+            h += sigCol('Provider', 'Owen Smyth', 'Apex Integrations') + sigCol('Client', m.owner_name, m.client_name);
+            h += '</div></div>';
+            h += '</div>';
+            return h;
+        }
+
+        function sItem(label, val) {
+            return '<div><div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#64748b;margin-bottom:1px;">' + label + '</div><div style="font-size:12px;font-weight:600;color:#0f172a;">' + esc(val || '') + '</div></div>';
+        }
+
+        function sigCol(title, name, company) {
+            var h = '<div><div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:14px;">' + title + '</div>';
+            h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:600;text-transform:uppercase;color:#94a3b8;margin-bottom:3px;">Name</div><div style="font-size:12px;font-weight:600;color:#0f172a;">' + esc(name) + '</div></div>';
+            h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:600;text-transform:uppercase;color:#94a3b8;margin-bottom:3px;">Company</div><div style="font-size:12px;font-weight:600;color:#0f172a;">' + esc(company) + '</div></div>';
+            h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:600;text-transform:uppercase;color:#94a3b8;margin-bottom:3px;">Signature</div><div style="border-bottom:1px solid #334155;min-height:22px;"></div></div>';
+            h += '<div><div style="font-size:9px;font-weight:600;text-transform:uppercase;color:#94a3b8;margin-bottom:3px;">Date</div><div style="font-size:11px;color:#64748b;">________________</div></div>';
+            h += '</div>';
+            return h;
+        }
+
         function renderTemplateEditor() {
             var t = templates.find(function(x) { return x.id === editingTemplate; });
             if (!t) return '';
-            var html = '<div class="tmpl-editor">';
+            var html = '';
             html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
             html += '<div class="tmpl-editor-title">' + esc(t.plan_type) + ' Template</div>';
             html += '<div style="display:flex;gap:8px;"><button class="btn-back" onclick="editingTemplate=null;renderContracts();">&larr; Back</button><button class="btn-save" onclick="saveTemplate(' + t.id + ')">Save Template</button></div>';
             html += '</div>';
-            html += '<textarea class="tmpl-editor-area" id="tmplContent">' + esc(t.content) + '</textarea>';
-            html += '<div class="tmpl-vars">Available variables: <code>{{client_name}}</code> <code>{{owner_name}}</code> <code>{{plan}}</code> <code>{{mrr}}</code> <code>{{initial_payment}}</code> <code>{{start_date}}</code> <code>{{contract_length}}</code></div>';
+            html += '<div class="tmpl-vars" style="margin-bottom:12px;">Variables: <code>{{client_name}}</code> <code>{{owner_name}}</code> <code>{{plan}}</code> <code>{{mrr}}</code> <code>{{initial_payment}}</code> <code>{{start_date}}</code> <code>{{contract_length}}</code></div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">';
+            // Editor
+            html += '<div class="tmpl-editor"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px;letter-spacing:0.8px;">Edit Legal Text</div>';
+            html += '<textarea class="tmpl-editor-area" id="tmplContent" oninput="updatePreview()">' + esc(t.content) + '</textarea></div>';
+            // Preview
+            html += '<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px;letter-spacing:0.8px;">Live Preview</div>';
+            html += '<div id="tmplPreview" style="background:#e5e7eb;border-radius:8px;padding:20px;max-height:700px;overflow-y:auto;">' + docPreviewHtml(fillPreview(t.content)) + '</div></div>';
             html += '</div>';
             return html;
+        }
+
+        function updatePreview() {
+            var el = document.getElementById('tmplContent');
+            var prev = document.getElementById('tmplPreview');
+            if (el && prev) prev.innerHTML = docPreviewHtml(fillPreview(el.value));
         }
 
         function saveTemplate(id) {
@@ -574,16 +642,17 @@
         function viewSentContract(id) {
             var sc = sentContracts.find(function(x) { return x.id === id; });
             if (!sc) return;
+            var m = sc.client_meta || {};
             var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">';
             html += '<button class="btn-back" onclick="renderContracts()">&larr; Back</button>';
             html += contractBadge(sc.status);
             html += '</div>';
-            html += '<div class="detail-section"><div class="detail-section-title">Contract for ' + esc(sc.client_name) + '</div>';
-            html += '<div style="white-space:pre-wrap;font-size:13px;line-height:1.7;color:#d1d5db;">' + esc(sc.filled_content) + '</div>';
+            html += '<div style="background:#e5e7eb;border-radius:8px;padding:24px;">';
+            html += docPreviewHtml(sc.filled_content, m);
             if (sc.status === 'Signed') {
-                html += '<div style="margin-top:20px;padding:16px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;">';
-                html += '<div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:4px;">Signed by ' + esc(sc.signer_name) + '</div>';
-                html += '<div style="font-size:11px;color:#6b7280;">' + esc(formatDate(sc.signed_at ? sc.signed_at.substring(0,10) : '')) + ' &middot; IP: ' + esc(sc.signer_ip) + '</div>';
+                html += '<div style="max-width:816px;margin:12px auto 0;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:16px;text-align:center;">';
+                html += '<div style="font-size:13px;font-weight:700;color:#065f46;">&#10003; Signed by ' + esc(sc.signer_name) + '</div>';
+                html += '<div style="font-size:11px;color:#475569;margin-top:4px;">' + esc(formatDate(sc.signed_at ? sc.signed_at.substring(0,10) : '')) + ' &middot; IP: ' + esc(sc.signer_ip) + '</div>';
                 html += '</div>';
             }
             html += '</div>';

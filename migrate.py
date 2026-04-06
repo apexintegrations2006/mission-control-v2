@@ -60,6 +60,19 @@ with engine.connect() as conn:
     conn.commit()
     print("  Updated seed client start dates")
 
+    # Add client_meta to contracts_sent if it exists but lacks the column
+    result = conn.execute(sqlalchemy.text(
+        "SELECT table_name FROM information_schema.tables WHERE table_name = 'contracts_sent'"
+    ))
+    if result.fetchone():
+        result2 = conn.execute(sqlalchemy.text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = 'contracts_sent' AND column_name = 'client_meta'"
+        ))
+        if not result2.fetchone():
+            conn.execute(sqlalchemy.text("ALTER TABLE contracts_sent ADD COLUMN client_meta TEXT DEFAULT '{}'"))
+            conn.commit()
+            print("  + Added client_meta to contracts_sent")
+
     # Create contract_templates table if not exists
     conn.execute(sqlalchemy.text("""
         CREATE TABLE IF NOT EXISTS contract_templates (

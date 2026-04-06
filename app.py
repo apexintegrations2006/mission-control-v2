@@ -103,9 +103,16 @@ class SentContract(db.Model):
     signed_at = db.Column(db.DateTime, nullable=True)
     signer_name = db.Column(db.String(200), default='')
     signer_ip = db.Column(db.String(50), default='')
+    client_meta = db.Column(db.Text, default='{}')
 
     client = db.relationship('Client', backref='contracts')
     template = db.relationship('ContractTemplate')
+
+    def get_meta(self):
+        try:
+            return json.loads(self.client_meta or '{}')
+        except (ValueError, TypeError):
+            return {}
 
     def to_dict(self):
         return {
@@ -115,6 +122,7 @@ class SentContract(db.Model):
             'template_id': self.template_id,
             'plan_type': self.template.plan_type if self.template else '',
             'filled_content': self.filled_content,
+            'client_meta': self.get_meta(),
             'status': self.status,
             'sent_at': self.sent_at.isoformat() if self.sent_at else None,
             'signed_at': self.signed_at.isoformat() if self.signed_at else None,
@@ -260,10 +268,20 @@ def send_contract():
     filled = filled.replace('{{start_date}}', client.start_date or 'TBD')
     filled = filled.replace('{{contract_length}}', client.contract_length or 'Month-to-Month')
 
+    meta = {
+        'client_name': client.business_name or '',
+        'owner_name': client.owner_name or '',
+        'plan': client.plan or '',
+        'mrr': str(int(client.mrr or 0)),
+        'initial_payment': str(int(client.initial_payment or 0)),
+        'start_date': client.start_date or 'TBD',
+        'contract_length': client.contract_length or 'Month-to-Month',
+    }
     sc = SentContract(
         client_id=client.id,
         template_id=tmpl.id,
         filled_content=filled,
+        client_meta=json.dumps(meta),
     )
     db.session.add(sc)
     db.session.commit()
@@ -291,74 +309,142 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contract - Apex Integrations</title>
+    <title>Service Agreement — Apex Integrations</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; }
-        .container { max-width: 800px; margin: 0 auto; padding: 40px 24px; }
-        .header { text-align: center; margin-bottom: 32px; }
-        .header h1 { font-size: 22px; font-weight: 700; color: #0f172a; }
-        .header p { font-size: 13px; color: #64748b; margin-top: 4px; }
-        .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-pending { background: #fef3c7; color: #92400e; }
-        .badge-signed { background: #d1fae5; color: #065f46; }
-        .contract-body {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
-            padding: 32px; white-space: pre-wrap; font-size: 14px; line-height: 1.7;
-            color: #334155; margin-bottom: 32px;
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #e5e7eb; color: #1e293b; min-height: 100vh; padding: 40px 20px; }
+        .page {
+            max-width: 816px; margin: 0 auto; background: #fff;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08);
+            border-radius: 2px; padding: 60px 72px 48px;
         }
-        .sign-section {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px;
-        }
-        .sign-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #0f172a; }
-        .sign-input {
-            width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px;
-            font-size: 14px; font-family: inherit; outline: none; margin-bottom: 12px;
-        }
-        .sign-input:focus { border-color: #7b68ee; }
-        .sign-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; margin-bottom: 16px; cursor: pointer; }
-        .sign-check input { width: 16px; height: 16px; accent-color: #7b68ee; }
-        .sign-btn {
-            background: #7b68ee; color: #fff; border: none; padding: 10px 24px;
-            border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
-        }
-        .sign-btn:hover { background: #6952e0; }
-        .sign-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .signed-info {
-            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;
-            padding: 24px; text-align: center;
-        }
-        .signed-info h3 { color: #065f46; font-size: 18px; margin-bottom: 8px; }
-        .signed-info p { font-size: 13px; color: #475569; }
+        @media (max-width: 860px) { .page { padding: 40px 28px 32px; } }
+
+        /* Letterhead */
+        .letterhead { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #1e293b; }
+        .letterhead-brand { font-size: 20px; font-weight: 800; color: #1e293b; letter-spacing: -0.3px; }
+        .letterhead-brand span { color: #7b68ee; }
+        .letterhead-right { text-align: right; font-size: 11px; color: #64748b; line-height: 1.6; }
+
+        /* Title */
+        .doc-title { text-align: center; font-family: Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: 1px; margin-bottom: 28px; text-transform: uppercase; }
+
+        /* Summary box */
+        .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 20px 24px; margin-bottom: 32px; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 32px; }
+        .summary-item-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 1px; }
+        .summary-item-value { font-size: 13px; font-weight: 600; color: #0f172a; }
+
+        /* Body */
+        .contract-body { font-family: Georgia, 'Times New Roman', serif; font-size: 13.5px; line-height: 1.8; color: #334155; white-space: pre-wrap; margin-bottom: 40px; }
+
+        /* Signature block */
+        .sig-block { border-top: 1px solid #cbd5e1; padding-top: 32px; margin-top: 40px; }
+        .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+        .sig-col-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 20px; }
+        .sig-field { margin-bottom: 20px; }
+        .sig-field-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 6px; }
+        .sig-field-value { font-size: 14px; color: #0f172a; font-weight: 600; }
+        .sig-line { border-bottom: 1px solid #334155; min-height: 28px; margin-bottom: 4px; }
+        .sig-line.signed { font-family: 'Brush Script MT', 'Segoe Script', cursive; font-size: 22px; color: #1e40af; padding-bottom: 4px; }
+        .sig-date { font-size: 12px; color: #64748b; }
+
+        /* Status ribbon */
+        .status-ribbon { text-align: center; margin-bottom: 24px; }
+        .ribbon-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 3px; text-transform: uppercase; letter-spacing: 1px; }
+        .ribbon-pending { background: #fef3c7; color: #92400e; }
+        .ribbon-signed { background: #d1fae5; color: #065f46; }
+
+        /* Sign form */
+        .sign-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 24px; margin-top: 32px; }
+        .sign-form h3 { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
+        .sign-input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; font-family: inherit; outline: none; margin-bottom: 12px; }
+        .sign-input:focus { border-color: #7b68ee; box-shadow: 0 0 0 3px rgba(123,104,238,0.1); }
+        .sign-check { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #475569; margin-bottom: 14px; cursor: pointer; }
+        .sign-check input { width: 15px; height: 15px; accent-color: #7b68ee; }
+        .sign-btn { background: #1e293b; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 0.3px; }
+        .sign-btn:hover { background: #0f172a; }
+        .sign-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .signed-confirmation { text-align: center; padding: 24px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; margin-top: 32px; }
+        .signed-confirmation h3 { color: #065f46; font-size: 16px; margin-bottom: 6px; }
+        .signed-confirmation p { font-size: 12px; color: #475569; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Apex Integrations &mdash; Service Agreement</h1>
-            <p>Contract for {{ contract.client.business_name }}</p>
-            <div style="margin-top:8px;">
-                {% if contract.status == 'Signed' %}
-                <span class="badge badge-signed">Signed</span>
-                {% else %}
-                <span class="badge badge-pending">Pending Signature</span>
-                {% endif %}
+    {% set meta = contract.get_meta() %}
+    <div class="page">
+        <!-- Letterhead -->
+        <div class="letterhead">
+            <div class="letterhead-brand">Apex<span>Integrations</span></div>
+            <div class="letterhead-right">Apex Integrations LLC<br>Tucson, Arizona<br>apexintegrations.com</div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-ribbon">
+            {% if contract.status == 'Signed' %}
+            <span class="ribbon-badge ribbon-signed">&#10003; Signed</span>
+            {% else %}
+            <span class="ribbon-badge ribbon-pending">Awaiting Signature</span>
+            {% endif %}
+        </div>
+
+        <!-- Title -->
+        <div class="doc-title">Service Agreement</div>
+
+        <!-- Summary -->
+        <div class="summary-box">
+            <div class="summary-grid">
+                <div><div class="summary-item-label">Client</div><div class="summary-item-value">{{ meta.get('owner_name', '') }}</div></div>
+                <div><div class="summary-item-label">Business</div><div class="summary-item-value">{{ meta.get('client_name', '') }}</div></div>
+                <div><div class="summary-item-label">Plan</div><div class="summary-item-value">{{ meta.get('plan', '') }}</div></div>
+                <div><div class="summary-item-label">Contract Length</div><div class="summary-item-value">{{ meta.get('contract_length', '') }}</div></div>
+                <div><div class="summary-item-label">Monthly Retainer</div><div class="summary-item-value">${{ meta.get('mrr', '0') }}/mo</div></div>
+                <div><div class="summary-item-label">Initial Payment</div><div class="summary-item-value">${{ meta.get('initial_payment', '0') }}</div></div>
+                <div><div class="summary-item-label">Start Date</div><div class="summary-item-value">{{ meta.get('start_date', 'TBD') }}</div></div>
             </div>
         </div>
 
+        <!-- Body -->
         <div class="contract-body">{{ contract.filled_content }}</div>
 
+        <!-- Signature block -->
+        <div class="sig-block">
+            <div class="sig-grid">
+                <div>
+                    <div class="sig-col-title">Provider</div>
+                    <div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">Owen Smyth</div></div>
+                    <div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">Apex Integrations</div></div>
+                    <div class="sig-field"><div class="sig-field-label">Signature</div><div class="sig-line signed">Owen Smyth</div></div>
+                    <div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{{ contract.sent_at.strftime('%B %d, %Y') if contract.sent_at else '' }}</div></div>
+                </div>
+                <div>
+                    <div class="sig-col-title">Client</div>
+                    <div class="sig-field"><div class="sig-field-label">Name</div><div class="sig-field-value">{{ meta.get('owner_name', '') }}</div></div>
+                    <div class="sig-field"><div class="sig-field-label">Company</div><div class="sig-field-value">{{ meta.get('client_name', '') }}</div></div>
+                    <div class="sig-field"><div class="sig-field-label">Signature</div>
+                        {% if contract.status == 'Signed' %}
+                        <div class="sig-line signed">{{ contract.signer_name }}</div>
+                        {% else %}
+                        <div class="sig-line"></div>
+                        {% endif %}
+                    </div>
+                    <div class="sig-field"><div class="sig-field-label">Date</div><div class="sig-date">{% if contract.status == 'Signed' %}{{ contract.signed_at.strftime('%B %d, %Y') }}{% endif %}</div></div>
+                </div>
+            </div>
+        </div>
+
         {% if contract.status == 'Signed' %}
-        <div class="signed-info">
+        <div class="signed-confirmation">
             <h3>&#10003; Contract Signed</h3>
-            <p>Signed by <strong>{{ contract.signer_name }}</strong> on {{ contract.signed_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+            <p>Signed by <strong>{{ contract.signer_name }}</strong> on {{ contract.signed_at.strftime('%B %d, %Y at %I:%M %p') }}<br>IP: {{ contract.signer_ip }}</p>
         </div>
         {% else %}
-        <div class="sign-section">
+        <div class="sign-form">
             <h3>Sign This Contract</h3>
-            <input class="sign-input" id="sigName" placeholder="Type your full legal name">
-            <label class="sign-check"><input type="checkbox" id="sigAgree"> I agree to the terms above</label>
-            <button class="sign-btn" id="sigBtn" onclick="signContract()" disabled>Sign Contract</button>
+            <input class="sign-input" id="sigName" placeholder="Type your full legal name to sign">
+            <label class="sign-check"><input type="checkbox" id="sigAgree"> I have read and agree to the terms of this Service Agreement</label>
+            <button class="sign-btn" id="sigBtn" onclick="signContract()" disabled>Sign Agreement</button>
         </div>
         <script>
             document.getElementById('sigAgree').addEventListener('change', function() {
@@ -376,8 +462,7 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ signer_name: name }),
-                }).then(function(r) { return r.json(); })
-                  .then(function() { location.reload(); });
+                }).then(function(r) { return r.json(); }).then(function() { location.reload(); });
             }
         </script>
         {% endif %}
@@ -388,21 +473,12 @@ SIGNING_PAGE_HTML = '''<!DOCTYPE html>
 
 # ── Seed Data ───────────────────────────────────────────
 
-WEBSITE_TEMPLATE = """PROFESSIONAL SERVICES AGREEMENT — WEBSITE DESIGN & DEVELOPMENT
-
-This Professional Services Agreement ("Agreement") is entered into between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
+WEBSITE_TEMPLATE = """This Professional Services Agreement ("Agreement") is entered into between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
 
 1. SCOPE OF SERVICES
 Provider agrees to design, develop, and deliver a custom professional website for Client's dental practice. The website will be mobile-responsive, SEO-optimized, and built to modern web standards.
 
-2. SERVICE PLAN
-Plan: {{plan}}
-Monthly Recurring Fee: ${{mrr}}/month
-Initial Setup Fee: ${{initial_payment}} (due upon signing)
-Contract Term: {{contract_length}}
-Service Start Date: {{start_date}}
-
-3. DELIVERABLES
+2. DELIVERABLES
 - Custom homepage design tailored to Client's dental practice brand
 - Up to 8 interior pages (About, Services, Team, Contact, etc.)
 - Mobile-responsive design across all devices
@@ -411,6 +487,74 @@ Service Start Date: {{start_date}}
 - Google Maps integration
 - SSL certificate and hosting setup via Cloudflare Pages
 - 30-day post-launch support period
+
+3. PAYMENT TERMS
+- Initial setup fee of ${{initial_payment}} is due upon execution of this Agreement
+- Monthly recurring fee of ${{mrr}} is billed on the 1st of each month via Stripe
+- Late payments are subject to a 5% fee after 15 days past due
+- Client may cancel monthly services with 30 days written notice
+
+4. INTELLECTUAL PROPERTY
+Upon full payment, Client owns all custom content and design assets. Provider retains rights to underlying code frameworks and templates.
+
+5. TERM & TERMINATION
+This Agreement begins on {{start_date}} and continues on a {{contract_length}} basis. Either party may terminate with 30 days written notice. Outstanding invoices remain due upon termination.
+
+6. LIMITATION OF LIABILITY
+Provider's total liability shall not exceed the total fees paid by Client in the preceding 12 months."""
+
+SEO_TEMPLATE = """This Professional Services Agreement ("Agreement") is entered into between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
+
+1. SCOPE OF SERVICES
+Provider agrees to deliver ongoing Search Engine Optimization (SEO) services to improve Client's dental practice visibility in local and organic search results.
+
+2. DELIVERABLES
+- Comprehensive SEO audit and keyword research
+- Google Business Profile optimization and management
+- Monthly on-page SEO improvements
+- Local citation building and management
+- Monthly performance reporting (rankings, traffic, leads)
+- Google Search Console and Analytics setup and monitoring
+- Content strategy recommendations
+- Quarterly strategy review calls
+
+3. PAYMENT TERMS
+- Initial setup fee of ${{initial_payment}} is due upon execution of this Agreement
+- Monthly recurring fee of ${{mrr}} is billed on the 1st of each month via Stripe
+- Late payments are subject to a 5% fee after 15 days past due
+- Client may cancel monthly services with 30 days written notice
+
+4. RESULTS DISCLAIMER
+SEO results are not guaranteed. Provider will use industry best practices but search engine algorithms are outside Provider's control. Typical results take 3-6 months to materialize.
+
+5. TERM & TERMINATION
+This Agreement begins on {{start_date}} and continues on a {{contract_length}} basis. Either party may terminate with 30 days written notice.
+
+6. LIMITATION OF LIABILITY
+Provider's total liability shall not exceed the total fees paid by Client in the preceding 12 months."""
+
+COMBO_TEMPLATE = """This Professional Services Agreement ("Agreement") is entered into between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
+
+1. SCOPE OF SERVICES
+Provider agrees to design, develop, and deliver a custom professional website AND provide ongoing SEO services for Client's dental practice.
+
+2. WEBSITE DELIVERABLES
+- Custom homepage design tailored to Client's dental practice brand
+- Up to 8 interior pages (About, Services, Team, Contact, etc.)
+- Mobile-responsive design across all devices
+- Contact form integration and Google Maps
+- SSL certificate and hosting setup via Cloudflare Pages
+- 30-day post-launch support period
+
+3. SEO DELIVERABLES
+- Comprehensive SEO audit and keyword research
+- Google Business Profile optimization and management
+- Monthly on-page SEO improvements
+- Local citation building and management
+- Monthly performance reporting (rankings, traffic, leads)
+- Google Search Console and Analytics setup and monitoring
+- Content strategy recommendations
+- Quarterly strategy review calls
 
 4. PAYMENT TERMS
 - Initial setup fee of ${{initial_payment}} is due upon execution of this Agreement
@@ -421,124 +565,14 @@ Service Start Date: {{start_date}}
 5. INTELLECTUAL PROPERTY
 Upon full payment, Client owns all custom content and design assets. Provider retains rights to underlying code frameworks and templates.
 
-6. TERM & TERMINATION
-This Agreement begins on {{start_date}} and continues on a {{contract_length}} basis. Either party may terminate with 30 days written notice. Outstanding invoices remain due upon termination.
-
-7. LIMITATION OF LIABILITY
-Provider's total liability shall not exceed the total fees paid by Client in the preceding 12 months.
-
-By signing below, both parties agree to the terms outlined in this Agreement.
-
-Provider: Apex Integrations
-Date: {{start_date}}
-
-Client: {{client_name}}
-Signature: ___________________________"""
-
-SEO_TEMPLATE = """PROFESSIONAL SERVICES AGREEMENT — SEO SERVICES
-
-This Professional Services Agreement ("Agreement") is entered into between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
-
-1. SCOPE OF SERVICES
-Provider agrees to deliver ongoing Search Engine Optimization (SEO) services to improve Client's dental practice visibility in local and organic search results.
-
-2. SERVICE PLAN
-Plan: {{plan}}
-Monthly Recurring Fee: ${{mrr}}/month
-Initial Setup Fee: ${{initial_payment}} (due upon signing)
-Contract Term: {{contract_length}}
-Service Start Date: {{start_date}}
-
-3. DELIVERABLES
-- Comprehensive SEO audit and keyword research
-- Google Business Profile optimization and management
-- Monthly on-page SEO improvements
-- Local citation building and management
-- Monthly performance reporting (rankings, traffic, leads)
-- Google Search Console and Analytics setup and monitoring
-- Content strategy recommendations
-- Quarterly strategy review calls
-
-4. PAYMENT TERMS
-- Initial setup fee of ${{initial_payment}} is due upon execution of this Agreement
-- Monthly recurring fee of ${{mrr}} is billed on the 1st of each month via Stripe
-- Late payments are subject to a 5% fee after 15 days past due
-- Client may cancel monthly services with 30 days written notice
-
-5. RESULTS DISCLAIMER
-SEO results are not guaranteed. Provider will use industry best practices but search engine algorithms are outside Provider's control. Typical results take 3-6 months to materialize.
-
-6. TERM & TERMINATION
-This Agreement begins on {{start_date}} and continues on a {{contract_length}} basis. Either party may terminate with 30 days written notice.
-
-7. LIMITATION OF LIABILITY
-Provider's total liability shall not exceed the total fees paid by Client in the preceding 12 months.
-
-By signing below, both parties agree to the terms outlined in this Agreement.
-
-Provider: Apex Integrations
-Date: {{start_date}}
-
-Client: {{client_name}}
-Signature: ___________________________"""
-
-COMBO_TEMPLATE = """PROFESSIONAL SERVICES AGREEMENT — WEBSITE DESIGN & SEO SERVICES
-
-This Professional Services Agreement ("Agreement") is entered into between Apex Integrations ("Provider") and {{client_name}} ("Client"), represented by {{owner_name}}.
-
-1. SCOPE OF SERVICES
-Provider agrees to design, develop, and deliver a custom professional website AND provide ongoing SEO services for Client's dental practice.
-
-2. SERVICE PLAN
-Plan: {{plan}}
-Monthly Recurring Fee: ${{mrr}}/month
-Initial Setup Fee: ${{initial_payment}} (due upon signing)
-Contract Term: {{contract_length}}
-Service Start Date: {{start_date}}
-
-3. WEBSITE DELIVERABLES
-- Custom homepage design tailored to Client's dental practice brand
-- Up to 8 interior pages (About, Services, Team, Contact, etc.)
-- Mobile-responsive design across all devices
-- Contact form integration and Google Maps
-- SSL certificate and hosting setup via Cloudflare Pages
-- 30-day post-launch support period
-
-4. SEO DELIVERABLES
-- Comprehensive SEO audit and keyword research
-- Google Business Profile optimization and management
-- Monthly on-page SEO improvements
-- Local citation building and management
-- Monthly performance reporting (rankings, traffic, leads)
-- Google Search Console and Analytics setup and monitoring
-- Content strategy recommendations
-- Quarterly strategy review calls
-
-5. PAYMENT TERMS
-- Initial setup fee of ${{initial_payment}} is due upon execution of this Agreement
-- Monthly recurring fee of ${{mrr}} is billed on the 1st of each month via Stripe
-- Late payments are subject to a 5% fee after 15 days past due
-- Client may cancel monthly services with 30 days written notice
-
-6. INTELLECTUAL PROPERTY
-Upon full payment, Client owns all custom content and design assets. Provider retains rights to underlying code frameworks and templates.
-
-7. RESULTS DISCLAIMER
+6. RESULTS DISCLAIMER
 SEO results are not guaranteed. Provider will use industry best practices but search engine algorithms are outside Provider's control.
 
-8. TERM & TERMINATION
+7. TERM & TERMINATION
 This Agreement begins on {{start_date}} and continues on a {{contract_length}} basis. Either party may terminate with 30 days written notice. Outstanding invoices remain due upon termination.
 
-9. LIMITATION OF LIABILITY
-Provider's total liability shall not exceed the total fees paid by Client in the preceding 12 months.
-
-By signing below, both parties agree to the terms outlined in this Agreement.
-
-Provider: Apex Integrations
-Date: {{start_date}}
-
-Client: {{client_name}}
-Signature: ___________________________"""
+8. LIMITATION OF LIABILITY
+Provider's total liability shall not exceed the total fees paid by Client in the preceding 12 months."""
 
 
 def seed_data():
